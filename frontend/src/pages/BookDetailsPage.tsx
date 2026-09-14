@@ -8,13 +8,13 @@ import {
   Star, 
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BookDetailsTable from "@/features/books/components/books/BookDetailsTable";
-import RelatedBook from "@/features/books/components/books/RelatedBook";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import BookReviews from "@/features/books/components/books/BookReviews";
 import { useCreateBorrows } from "@/hooks/useBorrows";
+import BookRecommendations from "@/features/books/components/books/BookRecommendations";
+import AuthorOtherBooks from "@/features/books/components/books/AuthorOtherBooks";
 
 const BookDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,7 +57,7 @@ const BookDetailsPage = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-8 min-h-screen">
+    <div className="max-w-6xl mx-auto px-0 md:p-4 space-y-8 min-h-screen">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -80,10 +80,10 @@ const BookDetailsPage = () => {
         </BreadcrumbList>
       </Breadcrumb>
       
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-0 items-start">
+      <div className="grid grid-cols-3 md:grid-cols-12 gap-4 items-start">
         {/* Book image */}
-        <div className="md:col-span-3">
-          <div className="w-56 h-80 rounded-2xl overflow-hidden shadow-sm bg-muted/50 border border-black/5">
+        <div className="md:col-span-3 col-span-1 my-auto">
+          <div className="w-24 h-36  md:w-56 md:h-80 rounded-xl overflow-hidden shadow-sm bg-muted/50 border border-black/5">
             <img
               src={book.image_url || "/placeholder-cover.jpg"}
               alt={book.title}
@@ -92,7 +92,7 @@ const BookDetailsPage = () => {
           </div>
         </div>
 
-        <div className="md:col-span-6 space-y-4 pt-2 md:mx-4">
+        <div className="md:col-span-6 col-span-2 md:space-y-4 space-y-2 pt-2 md:mx-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
               {book.title}
@@ -148,12 +148,8 @@ const BookDetailsPage = () => {
           </div>
         </div>
 
-        <div className="md:col-span-3">
-          <RelatedBook
-            authorName={book.author}
-            books={[]}
-            onSelectBook={(selectedId) => navigate(`/catalog/${selectedId}`)}
-          />
+        <div className="md:col-span-3 col-span-4">
+          <AuthorOtherBooks currentBookId={book.id} authorName={book.author} onSelectBook={(selectedId) => navigate(`/books/${selectedId}`)} />
         </div>
       </div>
 
@@ -193,11 +189,7 @@ const BookDetailsPage = () => {
             </TabsContent>
 
             <TabsContent value="recommendations">
-              <Card>
-                <CardContent className="p-4 text-xs text-muted-foreground">
-                  Recommended titles based on your reading history will appear here.
-                </CardContent>
-              </Card>
+              <BookRecommendations bookId={book.id} />
             </TabsContent>
           </Tabs>
         </div>

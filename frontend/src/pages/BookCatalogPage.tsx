@@ -41,7 +41,7 @@ const BookCatalogPage = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-12">
       {/* 1. CURATED HERO BANNER */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white p-8 md:p-10 flex items-center justify-between shadow-lg">
+      {/* <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white p-8 md:p-10 flex items-center justify-between shadow-lg">
         <div className="space-y-4 z-10 max-w-lg">
           <span className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-semibold tracking-wider uppercase text-purple-200 border border-white/10">
             CURATED SELECTION
@@ -65,7 +65,7 @@ const BookCatalogPage = () => {
             <div className="w-full h-full border-r-2 border-white/20" />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* 2. POPULAR SECTION */}
       <section className="space-y-4">
