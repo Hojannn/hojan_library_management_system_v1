@@ -47,17 +47,17 @@ class Borrow(BaseEntity): # Inheritance
 
   def to_dict(self):
     return {
-      "id": self.id,
-      "user_id": self.user_id,
-      "user_name": self.user.username,
-      "user_email": self.user.email,
-      "book_id": self.book_id,
-      "book_title": self.book.title if self.book.title else "Unknown",
-      "book_image": self.book.image_url if self.book.image_url else None,
-      "author": self.book.author if self.book.author else None,
-      "borrowed_at": self.borrowed_at.isoformat() if self.borrowed_at else None,
-      "due_date": self.due_date.isoformat(),
-      "status": self.status if self.status else "borrowed",
-      "is_overdue": self.is_overdue(),
-      "returned_at": self.returned_at.isoformat() if self.returned_at else None
+        "id": str(self.id) if self.id else None,
+        "user_id": str(self.user_id) if self.user_id else None,
+        "user_name": self.user.username if getattr(self, "user", None) else None,
+        "user_email": self.user.email if getattr(self, "user", None) else None,
+        "book_id": str(self.book_id) if self.book_id else None,
+        "book_title": self.book.title if getattr(self, "book", None) and self.book.title else "Unknown",
+        "book_image": self.book.image_url if getattr(self, "book", None) else None,
+        "author": self.book.author if getattr(self, "book", None) else None,
+        "borrowed_at": self.borrowed_at.isoformat() if self.borrowed_at else None,
+        "due_date": self.due_date.isoformat() if self.due_date else None,
+        "status": self.status if self.status else "borrowed",
+        "is_overdue": self.is_overdue(),
+        "returned_at": self.returned_at.isoformat() if self.returned_at else None
     }

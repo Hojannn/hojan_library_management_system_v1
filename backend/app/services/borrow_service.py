@@ -2,6 +2,7 @@ from app.models import Borrow, Book
 from app.extensions import db
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timezone, timedelta
+from uuid import UUID
 
 
 class BorrowService:
@@ -33,6 +34,18 @@ class BorrowService:
 
   @staticmethod
   def borrow_book(user_id, book_id):
+    if isinstance(book_id, str):
+      try:
+          book_id = UUID(book_id)
+      except ValueError:
+          raise ValueError("Invalid Book ID format")
+
+    if isinstance(user_id, str):
+      try:
+          user_id = UUID(user_id)
+      except ValueError:
+          raise ValueError("Invalid User ID format")
+        
     book = db.session.get(Book, book_id)
 
     if not book:
@@ -62,6 +75,9 @@ class BorrowService:
 
       db.session.add(borrow)
       db.session.commit()
+      db.session.refresh(borrow) 
+    
+      return borrow
 
     except Exception:
       db.session.rollback()
@@ -75,8 +91,8 @@ class BorrowService:
     if borrow is None:
       raise ValueError("Borrow record not found")
 
-    if str(borrow_id) != str(user_id):
-      raise PermissionError("Unauthorized")
+    if str(borrow.user_id) != str(user_id):
+        raise PermissionError("Unauthorized")
 
     if borrow.returned_at is not None:
       raise ValueError("Book has been already returned")
