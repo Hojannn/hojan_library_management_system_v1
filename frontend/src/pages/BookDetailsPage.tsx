@@ -14,6 +14,7 @@ import BookDetailsTable from "@/features/books/components/books/BookDetailsTable
 import RelatedBook from "@/features/books/components/books/RelatedBook";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import BookReviews from "@/features/books/components/books/BookReviews";
+import { useCreateBorrows } from "@/hooks/useBorrows";
 
 const BookDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,8 @@ const BookDetailsPage = () => {
 
   const { data: book, isLoading, isError, error } = useGetBookById(id);
   const { data: stats } = useGetBookReviewStats(id);
+
+  const borrowMutation = useCreateBorrows();
 
   if (isLoading) {
     return (
@@ -45,6 +48,13 @@ const BookDetailsPage = () => {
 
   const totalReviews = stats?.total_reviews ?? book.total_reviews ?? 0;
   const averageRating = stats?.average_rating ?? 0;
+  const isAvailable = (book.available_copies ?? 0) > 0;
+
+  const handleBorrow = () => {
+    if(!book.id) return;
+
+    borrowMutation.mutate({ book_id: book.id });
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-8 min-h-screen">
@@ -70,9 +80,9 @@ const BookDetailsPage = () => {
         </BreadcrumbList>
       </Breadcrumb>
       
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-0 items-start">
         {/* Book image */}
-        <div className="md:col-span-4 flex justify-center">
+        <div className="md:col-span-3">
           <div className="w-56 h-80 rounded-2xl overflow-hidden shadow-sm bg-muted/50 border border-black/5">
             <img
               src={book.image_url || "/placeholder-cover.jpg"}
@@ -82,7 +92,7 @@ const BookDetailsPage = () => {
           </div>
         </div>
 
-        <div className="md:col-span-6 space-y-4 pt-2">
+        <div className="md:col-span-6 space-y-4 pt-2 md:mx-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
               {book.title}
@@ -120,9 +130,17 @@ const BookDetailsPage = () => {
           </button>
 
           <div className="flex items-center gap-3 pt-4">
-            <Button className="gap-2 px-7 py-5 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-none hover:opacity-90">
-              <Bookmark className="w-4 h-4" />
-              Borrow
+            <Button 
+              onClick={handleBorrow}
+              disabled={!isAvailable || borrowMutation.isPending}
+              className="gap-2 px-7 py-5 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-none hover:opacity-90"
+            >
+              {borrowMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Bookmark className="w-4 h-4" />
+              )}
+              {!isAvailable ? "Out of Stock" : borrowMutation.isPending ? "Borrowing..." : "Borrow"}
             </Button>
             <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-black/10 bg-transparent shadow-none hover:bg-black/5">
               <Heart className="w-4 h-4 text-foreground" />
@@ -130,7 +148,7 @@ const BookDetailsPage = () => {
           </div>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-3">
           <RelatedBook
             authorName={book.author}
             books={[]}

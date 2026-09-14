@@ -54,7 +54,6 @@ def get_borrowed_books():
 @borrows_bp.post("")
 @jwt_required()
 def borrow_book():
-  BORROW_DURATION_DAYS = 14
 
   user_id = get_jwt_identity()
   data = request.get_json()
