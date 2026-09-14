@@ -3,6 +3,12 @@ import type { Book, BookResponse, ReviewResponse, ReviewStatsResponse } from "..
 import type { BookFormData } from "../types/book.schema";
 import { type IReview, ReviewEntity } from "../models/ReviewEntity";
 
+export const getBookRecommendations = async(bookId: string) => {
+  const { data } = await api.get<Book[]>(`/books/${bookId}/related`);
+
+  return data;
+}
+
 export const getBookReviews = async(bookId: string): Promise<ReviewResponse[]> => {
   const { data } = await api.get<{ reviews: ReviewResponse[] }>(`/books/${bookId}/reviews`);
 
