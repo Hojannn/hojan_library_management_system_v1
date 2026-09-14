@@ -9,8 +9,6 @@ interface BookCardProps {
 const BookCard = ({ book }: BookCardProps) => {
   const navigate = useNavigate();
 
-  console.log(book)
-
   return (
     <div
       onClick={() => navigate(`/books/${book.id}`)}

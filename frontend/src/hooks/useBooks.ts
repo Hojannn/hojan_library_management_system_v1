@@ -36,6 +36,8 @@ export const useSubmitReview = (bookId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["book-reviews", bookId] });
       queryClient.invalidateQueries({ queryKey: ["book-review-stats", bookId] });
+      queryClient.invalidateQueries({ queryKey: ["books", bookId] });
+      queryClient.invalidateQueries({ queryKey: ["books"] });
     }
   })
 

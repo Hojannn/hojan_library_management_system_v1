@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useBooks } from "@/hooks/useBooks";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,9 +8,18 @@ const BookCatalogPage = () => {
   const { data: books = [], isLoading, isError, error } = useBooks();
 
 
-  // Group books into sections
-  const popularBooks = books.slice(0, 5);
-  const recommendedBooks = books.slice(4, 8);
+  // 1. POPULAR: Sorted by highest rating / most reviews, limited to 5
+  const popularBooks = [...books]
+    .sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0))
+    .slice(0, 5);
+  
+  // 2. RECOMMENDED: Books with rating >= 4.0 and review activity
+  const recommendedBooks = books.filter(
+      (book) =>
+        (book.average_rating ?? 0) >= 4.0 && (book.total_reviews ?? 0) >= 1
+    ).slice(0, 5);
+  
+  // 3. OTHER BOOKS: Regular catalog slice or newly added titles
   const otherBooks = books.slice(0, 5);
 
   if (isLoading) {
@@ -74,9 +82,11 @@ const BookCatalogPage = () => {
         {popularBooks.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No popular books available.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
+          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-5 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
             {popularBooks.map((book) => (
-              <BookCard key={book.id} book={book} />
+              <div key={book.id} className="min-w-[150px] max-w-[170px] sm:min-w-0 sm:max-w-none snap-start shrink-0">
+                <BookCard book={book} />
+              </div>
             ))}
           </div>
         )}
@@ -97,9 +107,11 @@ const BookCatalogPage = () => {
         {recommendedBooks.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No recommendations found.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-5 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
             {recommendedBooks.map((book) => (
-              <BookCard key={book.id} book={book} />
+              <div key={book.id} className="min-w-[150px] max-w-[170px] sm:min-w-0 sm:max-w-none snap-start shrink-0">
+                <BookCard book={book} />
+              </div>
             ))}
           </div>
         )}
@@ -120,9 +132,11 @@ const BookCatalogPage = () => {
         {otherBooks.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No books found matching your criteria.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
+          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-5 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
             {otherBooks.map((book) => (
-              <BookCard key={book.id} book={book} />
+              <div key={book.id} className="min-w-[150px] max-w-[170px] sm:min-w-0 sm:max-w-none snap-start shrink-0">
+                <BookCard book={book} />
+              </div>
             ))}
           </div>
         )}
