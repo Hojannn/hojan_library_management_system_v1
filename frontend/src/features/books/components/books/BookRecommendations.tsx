@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useGetBookRecommendations } from "@/hooks/useBooks";

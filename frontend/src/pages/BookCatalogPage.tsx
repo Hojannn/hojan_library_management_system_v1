@@ -1,6 +1,5 @@
 import { useBooks } from "@/hooks/useBooks";
-import { Loader2, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import BookCard from "@/features/books/components/books/BookCard";
 import { NavLink } from "react-router-dom";
 

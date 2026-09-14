@@ -1,6 +1,5 @@
-  import { Badge } from "@/components/ui/badge";
-  import { BookOpen, Loader2 } from "lucide-react";
-  import type { Book } from "../../types/book.types";
+import { Badge } from "@/components/ui/badge";
+import { BookOpen, Loader2 } from "lucide-react";
 import { useGetBookRecommendations } from "@/hooks/useBooks";
 
   interface RelatedBookProps {
