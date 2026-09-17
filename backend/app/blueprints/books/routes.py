@@ -8,7 +8,7 @@ from app.services.book_service import BookService
 
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 
-# get related books
+# get related books by category or author books
 @books_bp.get("<uuid:id>/related")
 @jwt_required()
 def get_related_books(id):
@@ -144,11 +144,13 @@ def get_book(id):
 def get_books():
 
   search_query = request.args.get("search", "").strip()
+  category_id = request.args.get("category_id", "").strip() or None
   page = request.args.get("page", 1, type=int)
   limit = request.args.get("limit", 10, type=int)
 
   paginated_books = BookService.get_paginated_books(
     search_query=search_query,
+    category_id=category_id,
     page=page,
     limit=limit
   )

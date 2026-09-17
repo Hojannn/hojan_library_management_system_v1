@@ -30,7 +30,7 @@ class Book(BaseEntity): # Inheritance
     self.title = title
     self.author = author
     self._total_copies = total_copies
-    self._available_copies = total_copies if available_copies is not None else total_copies
+    self._available_copies = total_copies if available_copies is not None else available_copies
     self.isbn = isbn
     self.category_id = category_id
     self.description = description
@@ -84,6 +84,10 @@ class Book(BaseEntity): # Inheritance
 
   # Polymorphism
   def to_dict(self):
+    # Calculate average rating safely from related reviews
+    ratings = [r.rating for r in self.reviews] if hasattr(self, "reviews") and self.reviews else []
+    avg_rating = round(sum(ratings) / len(ratings), 1) if ratings else 0.0
+
     return {
         "id": self.id,
         "isbn": self.isbn,
@@ -95,6 +99,8 @@ class Book(BaseEntity): # Inheritance
         "total_copies": self.total_copies,
         "available_copies": self.available_copies,
         "description": self.description,
+        "average_rating": avg_rating,             # Computed average float
+        "total_reviews": len(ratings),
         "pages": self.pages,
         "created_at": self.created_at.isoformat() if self.created_at else None
     }

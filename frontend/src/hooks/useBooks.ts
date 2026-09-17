@@ -1,4 +1,4 @@
-import { createBook, deleteBook, getBookById, getBookReviews, getBookReviewStats, getBooks, submitReview, updateBook } from "@/features/books/api/books";
+import { createBook, deleteBook, getBookById, getBookRecommendations, getBookReviews, getBookReviewStats, getBooks, submitReview, updateBook } from "@/features/books/api/books";
 import { ReviewEntity } from "@/features/books/models/ReviewEntity";
 import type { BookFormData } from "@/features/books/types/book.schema";
 import { type Book } from "@/features/books/types/book.types";
@@ -9,6 +9,16 @@ interface BookUpdateProps {
   bookId: string;
   data: BookFormData
 }; 
+
+export const useGetBookRecommendations = (bookId: string) => {
+
+  return useQuery<Book[]>({
+    queryKey: ["related-books", bookId],
+    queryFn: () => getBookRecommendations(bookId),
+    enabled: !!bookId,
+    staleTime: 1000 * 60 * 5
+  })
+}
 
 export const useBooks = (categoryId?: string) => {
   return useQuery<Book[]>({
@@ -36,6 +46,8 @@ export const useSubmitReview = (bookId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["book-reviews", bookId] });
       queryClient.invalidateQueries({ queryKey: ["book-review-stats", bookId] });
+      queryClient.invalidateQueries({ queryKey: ["books", bookId] });
+      queryClient.invalidateQueries({ queryKey: ["books"] });
     }
   })
 

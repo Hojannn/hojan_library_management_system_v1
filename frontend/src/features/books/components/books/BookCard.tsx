@@ -1,6 +1,6 @@
-import type { Book } from "../types/book.types";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Star } from "lucide-react";
+import type { Book } from "../../types/book.types";
 
 interface BookCardProps {
   book: Book;
@@ -42,7 +42,7 @@ const BookCard = ({ book }: BookCardProps) => {
         {/* Rating */}
         <div className="flex items-center gap-1 pt-0.5">
           <span className="text-[10px] font-semibold text-foreground">
-            4.5
+            {book.average_rating != null ? book.average_rating : 0}
           </span>
           <Star className="h-2.5 w-2.5 fill-amber-400 stroke-amber-400" />
         </div>
