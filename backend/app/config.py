@@ -16,6 +16,5 @@ class Config:
   CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
   CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
 
-  # OAuth
+  # OAuth — token verification only needs the client ID
   GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-  GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")

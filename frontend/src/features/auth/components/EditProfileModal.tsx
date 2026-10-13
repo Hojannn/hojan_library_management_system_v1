@@ -81,7 +81,7 @@ function EditProfileForm({ onOpenChange }: EditProfileFormProps) {
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
-            Update your account details and academic credentials.
+            Update your account details and student information.
           </DialogDescription>
         </DialogHeader>
 

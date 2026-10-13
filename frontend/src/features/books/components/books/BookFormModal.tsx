@@ -262,7 +262,7 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
             <Textarea
               id="description"
               rows={3}
-              placeholder="Brief summary or synopsis of the book..."
+              placeholder="Brief summary of the book..."
               className="resize-none"
               {...register("description")}
             />

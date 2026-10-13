@@ -103,7 +103,7 @@ const BookCatalogPage = () => {
   if (isError) {
     return (
       <div className="m-6 p-4 border border-destructive/20 bg-destructive/10 text-destructive rounded-xl text-sm">
-        Error loading catalog: {error ? (error as Error).message : "Failed to fetch catalog"}
+        Error loading catalog: {error ? (error as Error).message : "Could not load catalog"}
       </div>
     );
   }

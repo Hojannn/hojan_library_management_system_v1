@@ -56,7 +56,7 @@ def borrow_book():
     try:
         borrow = BorrowService.request_borrow(user_id, book_id)
         return jsonify({
-            "message": "Borrow request submitted successfully. Awaiting librarian approval.",
+            "message": "Borrow request submitted successfully. Waiting for librarian approval.",
             "borrow": borrow.to_dict()
         }), 201
 
@@ -75,7 +75,7 @@ def return_book(id):
     try:
         borrow = BorrowService.request_return(id, user_id)
         return jsonify({
-            "message": "Return request submitted successfully. Please submit the physical book to the library.",
+            "message": "Return request submitted successfully. Please bring the physical book to the library.",
             "borrow": borrow.to_dict()
         }), 200
     except PermissionError as e:
