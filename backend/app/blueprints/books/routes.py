@@ -9,14 +9,14 @@ from app.services.book_service import BookService
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 
 # get related books by category or author books
-@books_bp.get("<uuid:id>/related")
+@books_bp.get("/<uuid:id>/related")
 @jwt_required()
 def get_related_books(id):
   try:
     related = BookService.get_related_books(book_id=id, limit=5)
     return jsonify([ book.to_dict() for book in related ]), 200
   except ValueError as e:
-    return jsonify({"message": f"Failed to fetch related books: {str(e)}"}), 500
+    return jsonify({"message": f"Could not load related books: {str(e)}"}), 500
 
 # get all reviews
 @books_bp.get("/<uuid:id>/reviews")

@@ -1,31 +1,25 @@
-import type React from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Loader2, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { type RegisterFormValues, registerSchema } from "../types/auth.schema";
 import { registerUser } from "../api/authApi";
+import { isAxiosError } from "axios";
 import { toast } from "sonner";
 
 interface RegisterFormProps {
   onSuccess?: () => void;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
+const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -43,119 +37,159 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       if (onSuccess) onSuccess();
 
       navigate("/login");
-      toast.success("Account created");
-    } catch (err: any) {
+      toast.success("Account created successfully!");
+    } catch (err) {
       setServerError(
-        err.response?.data?.message || "Registration failed. Please try again."
+        (isAxiosError(err) && err.response?.data?.message) ||
+          "Registration failed. Please try again."
       );
     }
   };
 
+  const inputClasses =
+    "w-full h-10 px-3 py-2 text-base md:text-base bg-card border border-input rounded-lg text-foreground";
+
   return (
-    <Card className="w-full max-w-md mx-auto shadow-md">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-        <CardDescription>
-          Enter your details below to set up your account
-        </CardDescription>
-      </CardHeader>
+    <div className="w-full space-y-3">
 
-      <CardContent>
-        {/* Server Error Alert */}
-        {serverError && (
-          <div className="mb-4 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-            {serverError}
-          </div>
-        )}
+      {serverError && (
+        <div
+          role="alert"
+          className="flex items-start gap-2 px-3 py-2.5 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg"
+        >
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{serverError}</span>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Email */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-xs font-medium leading-normal text-foreground">
+            Email address
+          </Label>
+          <div className="space-y-1">
             <Input
               id="email"
               type="email"
               placeholder="student@gmail.com"
+              className={inputClasses}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-xs text-destructive">
+              <p className="text-xs font-medium leading-normal text-destructive">
                 {errors.email.message}
               </p>
             )}
           </div>
+        </div>
 
-          {/* Username */}
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+        <div className="space-y-2">
+          <Label htmlFor="username" className="text-xs font-medium leading-normal text-foreground">
+            Username
+          </Label>
+          <div className="space-y-1">
             <Input
               id="username"
               type="text"
-              placeholder="johndoe"
+              placeholder="Choose a username"
+              className={inputClasses}
               {...register("username")}
             />
             {errors.username && (
-              <p className="text-xs text-destructive">
+              <p className="text-xs font-medium leading-normal text-destructive">
                 {errors.username.message}
               </p>
             )}
           </div>
+        </div>
 
-          {/* Password */}
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              {...register("password")}
-            />
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-xs font-medium leading-normal text-foreground">
+            Password
+          </Label>
+          <div className="space-y-1">
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••••••"
+                className={`${inputClasses} pr-10`}
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
             {errors.password && (
-              <p className="text-xs text-destructive">
+              <p className="text-xs font-medium leading-normal text-destructive">
                 {errors.password.message}
               </p>
             )}
           </div>
+        </div>
 
-          {/* Confirm Password (if present in schema) */}
-          {"confirmPassword" in registerSchema.shape && (
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword" className="text-xs font-medium leading-normal text-foreground">
+            Confirm password
+          </Label>
+          <div className="space-y-1">
+            <div className="relative">
               <Input
                 id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                {...register("confirmPassword" as keyof RegisterFormValues)}
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••••••"
+                className={`${inputClasses} pr-10`}
+                {...register("confirmPassword")}
               />
-              {errors.confirmPassword && (
-                <p className="text-xs text-destructive">
-                  {errors.confirmPassword.message as string}
-                </p>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
-          )}
-
-          {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Registering...
-              </>
-            ) : (
-              "Register"
+            {errors.confirmPassword && (
+              <p className="text-xs font-medium leading-normal text-destructive">
+                {errors.confirmPassword.message}
+              </p>
             )}
-          </Button>
-        </form>
+          </div>
+        </div>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link to="/login" className="font-semibold underline underline-offset-4 hover:text-primary">
-            Sign in
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full h-10 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 shadow-sm"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Creating Account...
+            </>
+          ) : (
+            <>
+              Create Account <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </Button>
+      </form>
+    </div>
   );
 };
 

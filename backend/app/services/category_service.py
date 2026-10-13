@@ -31,7 +31,7 @@ class CategoryService:
       db.session.commit()
 
       return {
-        "message": "Category created successfull",
+        "message": "Category created successfully",
         "category": category.to_dict()
       }
     

@@ -1,17 +1,59 @@
-import LoginForm from '@/features/auth/components/LoginForm';
-import GLogin from '@/features/auth/components/GLogin';
+import LoginForm from "@/features/auth/components/LoginForm";
+import GLogin from "@/features/auth/components/GLogin";
+import { Link } from "react-router-dom";
 
 const LoginPage = () => {
   return (
-    <div className="w-[400px] mx-auto my-20 space-y-6">
-      <LoginForm />
-      
-      <div className="relative flex items-center justify-center">
-        <div className="border-t border-gray-300 w-full" />
-        <span className="bg-white px-3 text-sm text-gray-500 absolute">OR</span>
-      </div>
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-foreground overflow-y-auto">
 
-      <GLogin />
+      <div
+        className="fixed inset-0 bg-cover bg-center opacity-85"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1600&auto=format&fit=crop')`,
+        }}
+      />
+      <div className="fixed inset-0 bg-foreground/20 backdrop-blur-[2px]" />
+
+
+      <div className="relative z-10 w-full max-w-[440px] bg-card rounded-xl p-6 sm:p-8 shadow-xl space-y-4 my-auto">
+
+        {/* Logo & Header */}
+        <div className="flex flex-col items-center text-center gap-2">
+
+          <h1 className="text-2xl font-semibold text-foreground">
+            Welcome Back
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+            Please enter your details
+          </p>
+        </div>
+
+
+        <LoginForm />
+
+        {/* Divider */}
+        <div className="relative flex items-center justify-center my-3">
+          <div className="border-t border-border w-full" />
+          <span className="bg-card px-3 text-xs font-medium text-muted-foreground tracking-wider uppercase absolute">
+            Or continue with
+          </span>
+        </div>
+
+
+        <GLogin />
+
+        {/* Footer Link */}
+        <p className="text-center text-sm text-muted-foreground pt-1">
+          Don't have account yet?
+          <Link
+            to="/register"
+            className="pl-1 font-semibold text-foreground underline underline-offset-4 hover:text-primary transition-colors"
+          >
+            Register Account
+          </Link>
+        </p>
+
+      </div>
     </div>
   );
 };

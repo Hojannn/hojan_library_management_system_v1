@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -26,9 +26,26 @@ interface BookFormModalProps {
 }
 
 const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden">
+        <BookFormContent book={book} onClose={onClose} />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface BookFormContentProps {
+  book?: Book | null;
+  onClose: () => void;
+}
+
+const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
   const createBookMutation = useCreateBooks();
   const updateBookMutation = useUpdateBooks();
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    book?.image_url || null
+  );
 
   const isEditing = !!book;
 
@@ -37,48 +54,21 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
     handleSubmit,
     control,
     setValue,
-    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(bookSchema),
     defaultValues: {
-      title: "",
-      author: "",
-      isbn: "",
-      category_name: "",
-      description: "",
-      total_copies: 1,
-      pages: "",
+      title: book?.title || "",
+      author: book?.author || "",
+      isbn: book?.isbn || "",
+      category_name: book?.category_name || "",
+      description: book?.description || "",
+      total_copies: book?.total_copies ?? 1,
+      pages: book?.pages ? String(book.pages) : "",
       image: undefined,
     },
   });
 
-  useEffect(() => {
-    if (book) {
-      reset({
-        title: book.title || "",
-        author: book.author || "",
-        isbn: book.isbn || "",
-        category_name: book.category_name || "",
-        description: book.description || "",
-        total_copies: book.total_copies ?? 1,
-        pages: book.pages ? String(book.pages) : "",
-      });
-      setImagePreview(book.image_url || null);
-    } else {
-      reset({
-        title: "",
-        author: "",
-        isbn: "",
-        category_name: "",
-        description: "",
-        total_copies: 1,
-        pages: "",
-        image: undefined,
-      });
-      setImagePreview(null);
-    }
-  }, [book, reset, isOpen])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,8 +88,6 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
   };
 
   const handleClose = () => {
-    reset();
-    setImagePreview(null);
     onClose();
   };
 
@@ -116,13 +104,16 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden">
+    <>
         {/* Header */}
         <div className="bg-muted/40 px-6 pt-6 pb-4 border-b">
-          <DialogTitle className="text-xl font-bold tracking-tight">Add New Book</DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground mt-1">
-            Fill in the details below to add a new title to the library catalog.
+          <DialogTitle className="text-xl font-semibold tracking-tight">
+            {isEditing ? "Edit Book" : "Add New Book"}
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground mt-1">
+            {isEditing
+              ? "Update the details below to save your changes to this title."
+              : "Fill in the details below to add a new title to the library catalog."}
           </DialogDescription>
         </div>
 
@@ -130,7 +121,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left Column: Image Upload Area */}
             <div className="space-y-2">
-              <Label className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
+              <Label className="text-xs font-medium">
                 Book Cover
               </Label>
 
@@ -160,7 +151,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
                     </div>
                     <div className="space-y-0.5">
                       <p className="text-xs font-medium">Upload cover</p>
-                      <p className="text-[10px] text-muted-foreground">PNG, JPG up to 5MB</p>
+                      <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
                     </div>
                     <input
                       id="cover-upload"
@@ -180,7 +171,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
             {/* Right Column: Key Details */}
             <div className="md:col-span-2 space-y-4">
               {/* Title */}
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <Label htmlFor="title" className="text-xs font-medium">
                   Title <span className="text-destructive">*</span>
                 </Label>
@@ -192,7 +183,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
 
               {/* Author & Category */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="author" className="text-xs font-medium">
                     Author <span className="text-destructive">*</span>
                   </Label>
@@ -202,7 +193,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
                   )}
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="category" className="text-xs font-medium">
                     Category
                   </Label>
@@ -225,7 +216,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
 
               {/* ISBN, Copies, Pages */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="isbn" className="text-xs font-medium">
                     ISBN
                   </Label>
@@ -235,7 +226,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
                   )}
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="total_copies" className="text-xs font-medium">
                     Copies <span className="text-destructive">*</span>
                   </Label>
@@ -250,7 +241,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
                   )}
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="pages" className="text-xs font-medium">
                     Pages
                   </Label>
@@ -264,15 +255,15 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
           </div>
 
           {/* Full Width Row: Description */}
-          <div className="space-y-1 border-t pt-4">
+          <div className="space-y-2 border-t pt-4">
             <Label htmlFor="description" className="text-xs font-medium">
               Description
             </Label>
             <Textarea
               id="description"
               rows={3}
-              placeholder="Brief summary or synopsis of the book..."
-              className="resize-none text-xs"
+              placeholder="Brief summary of the book..."
+              className="resize-none"
               {...register("description")}
             />
             {errors.description && (
@@ -302,8 +293,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
             </Button>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </>
   );
 };
 

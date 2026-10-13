@@ -36,7 +36,7 @@ def update_category(id):
   except ValueError as e:
     return jsonify({ "message": str(e) }), 400
   except Exception:
-    return jsonify({ "message": "Failed to updated category" }), 500
+    return jsonify({ "message": "Failed to update category" }), 500
 
 @category_bp.get("")
 @jwt_required()
