@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useCategories } from "@/hooks/useCategories";
-import { Loader2 } from "lucide-react";
 
 interface CategorySelectProps {
   value?: string;
@@ -14,7 +14,7 @@ const CategorySelect = ({ value, onChange, error }: CategorySelectProps) => {
   if (isLoading) {
     return (
       <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-muted/50 px-3 text-xs text-muted-foreground">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        <LoadingSpinner label="Loading categories" size={14} />
         Loading categories...
       </div>
     );

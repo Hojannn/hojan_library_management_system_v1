@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import { useGetBookRecommendations } from "@/hooks/useBooks";
 import BookCard from "./BookCard";
 
@@ -13,11 +13,7 @@ const BookRecommendations = ({ bookId }: BookRecommendationsProps) => {
 
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingState className="text-muted-foreground" containerClassName="p-8" label="Loading recommendations" size={24} />;
   }
 
   if (!recommendations || recommendations.length === 0) {

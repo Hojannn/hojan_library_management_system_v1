@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Loader2 } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-spinner";
+import { BookOpen } from "lucide-react";
 import { useGetBookRecommendations } from "@/hooks/useBooks";
 import { formatAuthorName } from "../../../../utils/formatAuthorName"
 
@@ -20,11 +21,7 @@ import { formatAuthorName } from "../../../../utils/formatAuthorName"
     const displayName = formatAuthorName(authorName,1);
 
     if (isLoading) {
-    return (
-      <div className="flex justify-center p-6">
-        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingState className="text-muted-foreground" containerClassName="p-6" label="Loading more books by this author" size={16} />;
   }
 
     return (
@@ -76,4 +73,4 @@ import { formatAuthorName } from "../../../../utils/formatAuthorName"
     );
   };
 
-  export default AuthorOtherBooks; 
+  export default AuthorOtherBooks;

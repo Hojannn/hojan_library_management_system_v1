@@ -11,7 +11,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useUpdateUserProfile } from "@/hooks/useAuth";
-import { Loader2 } from "lucide-react";
 
 interface EditProfileModalProps {
   open: boolean;
@@ -209,11 +208,7 @@ function EditProfileForm({ onOpenChange }: EditProfileFormProps) {
               disabled={isSubmitting}
               className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs min-w-[90px]"
             >
-              {isSubmitting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                "Save Changes"
-              )}
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>
