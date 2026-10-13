@@ -6,10 +6,10 @@ import {
   Contact, 
   BookOpen, 
   Copy,
-  Check,
-  Loader2
+  Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
   Dialog,
   DialogContent,
@@ -215,7 +215,7 @@ export default function StudentProfile() {
                 <div className="rounded-xl p-4 text-center border">
                   <span className="block text-2xl font-bold  mb-1">
                     {isLoadingBorrows ? (
-                      <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                      <LoadingSpinner className="mx-auto" label="Loading active loans" size={20} />
                     ) : (
                       activeCount
                     )}
@@ -228,7 +228,7 @@ export default function StudentProfile() {
                 <div className=" rounded-xl p-4 text-center border ">
                   <span className="block text-2xl font-bold mb-1">
                     {isLoadingHistory ? (
-                      <Loader2 className="w-5 h-5 animate-spin mx-auto " />
+                      <LoadingSpinner className="mx-auto" label="Loading loan history" size={20} />
                     ) : (
                       historyCount
                     )}

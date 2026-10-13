@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { Loader2, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -178,10 +178,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
           className="w-full h-10 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 shadow-sm"
         >
           {isSubmitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Creating Account...
-            </>
+            "Creating Account..."
           ) : (
             <>
               Create Account <ArrowRight className="w-4 h-4" />

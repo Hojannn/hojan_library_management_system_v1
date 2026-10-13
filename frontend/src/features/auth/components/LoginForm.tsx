@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@base-ui/react/input";
@@ -126,10 +126,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           className="w-full h-10 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 mt-2 shadow-sm"
         >
           {isSubmitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Signing in...
-            </>
+            "Signing in..."
           ) : (
             <>
               Sign in

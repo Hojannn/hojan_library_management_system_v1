@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useCategories } from "@/hooks/useCategories";
-import { Loader2 } from "lucide-react";
 
 interface CategoryFilterProps {
   selectedCategoryId: string | null;
@@ -14,7 +14,7 @@ const CategoryFilter = ({ selectedCategoryId, onSelectCategory }: CategoryFilter
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading categories...
+        <LoadingSpinner label="Loading categories" size={14} /> Loading categories...
       </div>
     );
   }

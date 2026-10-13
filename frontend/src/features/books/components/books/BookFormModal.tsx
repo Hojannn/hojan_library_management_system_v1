@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCreateBooks, useUpdateBooks } from "@/hooks/useBooks";
 import { type BookFormData, bookSchema } from "../../types/book.schema";
-import { Loader2, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import type { Book } from "../../types/book.types";
 import CategorySelect from "../categories/CategorySelect";
 
@@ -48,6 +48,7 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
   );
 
   const isEditing = !!book;
+  const isSaving = createBookMutation.isPending || updateBookMutation.isPending;
 
   const {
     register,
@@ -277,14 +278,11 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
               type="button"
               variant="outline"
               onClick={handleClose}
-              disabled={createBookMutation.isPending}
+              disabled={isSaving}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createBookMutation.isPending}>
-              {createBookMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <Button type="submit" disabled={isSaving}>
               {isEditing ? (
                 updateBookMutation.isPending ? "Updating..." : "Update Book"
               ) : (

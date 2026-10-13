@@ -31,7 +31,6 @@ import {
   CheckCircle2,
   XCircle,
   RotateCcw,
-  Loader2,
   Inbox,
 } from "lucide-react";
 
@@ -162,11 +161,7 @@ const AdminBorrowsTable = ({
                   <DropdownMenu>
                     <DropdownMenuTrigger>
                       <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoadingRow}>
-                        {isLoadingRow ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <MoreHorizontal className="h-4 w-4" />
-                        )}
+                        <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>

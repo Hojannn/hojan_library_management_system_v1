@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 
 
 
@@ -109,7 +110,7 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
       <div className="border rounded-md divide-y max-h-[250px] overflow-y-auto mt-2">
         {isLoading ? (
           <div className="p-4 flex justify-center text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <LoadingSpinner label="Loading categories" size={20} />
           </div>
         ) : categories?.length === 0 ? (
           <p className="p-4 text-xs text-center text-muted-foreground">No categories found.</p>

@@ -1,7 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import BorrowsTable from "@/features/borrows/components/BorrowsTable";
 import { useBorrowHistory, useBorrows, useReturnBook } from "@/hooks/useBorrows"
-import { BookOpen, History, Loader2 } from "lucide-react";
+import { BookOpen, History } from "lucide-react";
 
 
 const MyBorrowsPage = () => {
@@ -57,9 +58,7 @@ const MyBorrowsPage = () => {
         {/* for tab 1 */}
         <TabsContent value="active">
           {isLoadingActive ? (
-            <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+            <LoadingState className="text-primary" containerClassName="h-64" label="Loading active loans" />
           ) : isErrorActive ? (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
               Error loading active loans: {errorActive?.message || "Could not load records"}
@@ -85,9 +84,7 @@ const MyBorrowsPage = () => {
         {/* for tab 2 */}
         <TabsContent value="history">
           {isLoadingHistory ? (
-            <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+            <LoadingState className="text-primary" containerClassName="h-64" label="Loading borrow history" />
           ) : isErrorHistory ? (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
               Error loading borrow history: {errorHistory?.message || "Could not load records"}

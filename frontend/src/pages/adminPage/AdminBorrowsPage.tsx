@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminBorrowsTable from "@/features/borrows/components/AdminBorrowsTable";
 import {
@@ -14,7 +15,6 @@ import {
   BookOpen,
   Clock,
   Inbox,
-  Loader2,
   Search,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -65,11 +65,7 @@ const AdminBorrowsPage = () => {
     (rejectMutation.variables as string);
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingState className="text-primary" containerClassName="h-64" label="Loading borrow records" />;
   }
 
   if (isError) {

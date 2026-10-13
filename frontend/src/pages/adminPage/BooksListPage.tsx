@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import BookFormModal from "@/features/books/components/books/BookFormModal";
 import BooksTable from "@/features/books/components/books/BooksTable";
 import CategoryFilter from "@/features/books/components/categories/CategoryFilter";
 import CategoryModal from "@/features/books/components/categories/CategoryModal";
 import { type Book } from "@/features/books/types/book.types";
 import { useBooks, useDeleteBooks } from "@/hooks/useBooks";
-import { AlertCircle, Loader2, Plus } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import { useState } from "react"
 
 const BooksListPage = () => {
@@ -37,11 +38,7 @@ const BooksListPage = () => {
     : books;
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingState className="text-primary" containerClassName="h-64" label="Loading books" />;
   }
 
   if (isError) {
