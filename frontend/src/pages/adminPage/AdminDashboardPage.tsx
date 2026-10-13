@@ -129,7 +129,7 @@ const AdminDashboardPage = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold">
-              Pending Pickup
+              Waiting for Pickup
             </CardTitle>
             <Inbox className="h-4 w-4 text-warning" />
           </CardHeader>
@@ -138,7 +138,7 @@ const AdminDashboardPage = () => {
               {stats.pending}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Awaiting your approval
+              Waiting for your approval
             </p>
           </CardContent>
         </Card>

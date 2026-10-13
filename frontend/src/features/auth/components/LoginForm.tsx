@@ -50,7 +50,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     } catch (err) {
       setServerError(
         (isAxiosError(err) && err.response?.data?.message) ||
-          "Invalid credentials. Please try again."
+          "Wrong email or password. Please try again."
       );
     }
   };

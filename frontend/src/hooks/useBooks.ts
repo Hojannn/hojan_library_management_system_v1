@@ -121,7 +121,7 @@ export const useDeleteBooks = () => {
       queryClient.invalidateQueries({
         queryKey: ["books"]
       });
-      toast.success("Book deleted success")
+      toast.success("Book deleted successfully")
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data?.message || "Failed to delete book")

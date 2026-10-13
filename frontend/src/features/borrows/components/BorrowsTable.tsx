@@ -35,7 +35,7 @@ const BorrowsTable = ({
       case "PENDING_BORROW":
         return (
           <Badge variant="outline" className="border-amber-500 text-amber-700 bg-amber-50">
-            Pending Approval
+            Waiting for Approval
           </Badge>
         );
       case "BORROWED":
@@ -47,7 +47,7 @@ const BorrowsTable = ({
       case "PENDING_RETURN":
         return (
           <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50">
-            Pending Return
+            Waiting for Return
           </Badge>
         );
       case "RETURNED":
@@ -154,11 +154,11 @@ const BorrowsTable = ({
                       </Button>
                     ) : borrow.status === "PENDING_BORROW" ? (
                       <span className="text-xs text-muted-foreground italic">
-                        Awaiting Pickup
+                        Waiting for Pickup
                       </span>
                     ) : borrow.status === "PENDING_RETURN" ? (
                       <span className="text-xs text-muted-foreground italic">
-                        Awaiting Return Confirmation
+                        Waiting for Return Confirmation
                       </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>

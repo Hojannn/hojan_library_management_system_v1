@@ -16,7 +16,7 @@ def get_related_books(id):
     related = BookService.get_related_books(book_id=id, limit=5)
     return jsonify([ book.to_dict() for book in related ]), 200
   except ValueError as e:
-    return jsonify({"message": f"Failed to fetch related books: {str(e)}"}), 500
+    return jsonify({"message": f"Could not load related books: {str(e)}"}), 500
 
 # get all reviews
 @books_bp.get("/<uuid:id>/reviews")

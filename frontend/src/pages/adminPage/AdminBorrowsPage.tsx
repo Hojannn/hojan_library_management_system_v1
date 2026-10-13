@@ -75,7 +75,7 @@ const AdminBorrowsPage = () => {
   if (isError) {
     return (
       <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
-        Error loading borrow records: {error?.message || "Failed to fetch records"}
+        Error loading borrow records: {error?.message || "Could not load records"}
       </div>
     );
   }
@@ -85,7 +85,7 @@ const AdminBorrowsPage = () => {
       <div className="border-b pb-4">
         <h1 className="text-2xl font-semibold tracking-tight">Borrows Management</h1>
         <p className="text-sm text-muted-foreground">
-          Monitor active book borrowed, review pending pickup requests, and process returns across the library.
+          See borrowed books, approve waiting requests, and confirm returns across the library.
         </p>
       </div>
 
@@ -108,7 +108,7 @@ const AdminBorrowsPage = () => {
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground border-t pt-3">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 shrink-0 rounded-full bg-warning" />
-                {pendingBorrows.length} Pending
+                {pendingBorrows.length} Waiting
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 shrink-0 rounded-full bg-leather" />
@@ -128,7 +128,7 @@ const AdminBorrowsPage = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold">Pending Pickup</CardTitle>
+            <CardTitle className="text-sm font-semibold">Waiting for Pickup</CardTitle>
             <Inbox className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
@@ -175,7 +175,7 @@ const AdminBorrowsPage = () => {
           <TabsList className="grid w-full max-w-2xl grid-cols-5 h-9!">
             <TabsTrigger value="all">All ({borrows.length})</TabsTrigger>
             <TabsTrigger value="pending">
-              Pending ({pendingBorrows.length})
+              Waiting ({pendingBorrows.length})
             </TabsTrigger>
             <TabsTrigger value="active">Active ({activeBorrows.length})</TabsTrigger>
             <TabsTrigger

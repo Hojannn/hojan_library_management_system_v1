@@ -113,7 +113,7 @@ class BorrowService:
             raise ValueError("Borrow record not found")
 
         if borrow.status != Borrow.STATUS_PENDING_BORROW:
-            raise ValueError("Only pending requests can be approved for borrow")
+            raise ValueError("Only requests that are waiting can be approved for borrow")
 
         book = db.session.get(Book, borrow.book_id, with_for_update=True)
         if not book or book.available_copies <= 0:
@@ -141,7 +141,7 @@ class BorrowService:
             raise ValueError("Borrow record not found")
 
         if borrow.status != Borrow.STATUS_PENDING_BORROW:
-            raise ValueError("Only pending requests can be rejected")
+            raise ValueError("Only requests that are waiting can be rejected")
 
         try:
             borrow.status = Borrow.STATUS_REJECTED
@@ -165,7 +165,7 @@ class BorrowService:
             Borrow.STATUS_BORROWED,
             Borrow.STATUS_OVERDUE,
         ):
-            raise ValueError("Borrow record is not pending return confirmation")
+            raise ValueError("Borrow record is not waiting for return confirmation")
 
         book = db.session.get(Book, borrow.book_id, with_for_update=True)
 

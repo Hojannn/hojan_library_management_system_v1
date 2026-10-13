@@ -60,9 +60,9 @@ const STATUS_STYLES: Record<
   BorrowItem["status"],
   { label: string; className: string }
 > = {
-  PENDING_BORROW: { label: "Pending", className: "bg-warning/10 text-warning" },
+  PENDING_BORROW: { label: "Waiting", className: "bg-warning/10 text-warning" },
   BORROWED: { label: "Borrowed", className: "bg-secondary text-secondary-foreground" },
-  PENDING_RETURN: { label: "Pending return", className: "bg-warning/10 text-warning" },
+  PENDING_RETURN: { label: "Waiting for return", className: "bg-warning/10 text-warning" },
   RETURNED: { label: "Returned", className: "bg-success/10 text-success" },
   REJECTED: { label: "Rejected", className: "bg-muted text-muted-foreground" },
   OVERDUE: { label: "Overdue", className: "bg-destructive/10 text-destructive" },
@@ -202,7 +202,7 @@ const AdminBorrowsTable = ({
 
                       {(row.status === "RETURNED" || row.status === "REJECTED") && (
                         <DropdownMenuItem disabled>
-                          No pending actions
+                          Nothing waiting for action
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>

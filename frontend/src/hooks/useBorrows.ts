@@ -38,7 +38,7 @@ export const useCreateBorrows = () => {
       queryClient.invalidateQueries({ queryKey: ["borrows"] });
       queryClient.invalidateQueries({ queryKey: ["books"] });
       queryClient.invalidateQueries({ queryKey: ["book"] });
-      toast.success("Borrow request submitted! Awaiting librarian approval.");
+      toast.success("Borrow request submitted! Waiting for librarian approval.");
     },
     onError: (error: AxiosError<{ message: string }>) => {
       const errorMessage =
@@ -58,7 +58,7 @@ export const useReturnBook = () => {
       queryClient.invalidateQueries({ queryKey: ["borrows"] });
       queryClient.invalidateQueries({ queryKey: ["books"] });
       queryClient.invalidateQueries({ queryKey: ["book"] });
-      toast.success("Return request submitted. Please present the physical book to the library.");
+      toast.success("Return request submitted. Please bring the physical book to the library.");
     },
     onError: (error: AxiosError<{ message: string }>) => {
       const errorMessage =

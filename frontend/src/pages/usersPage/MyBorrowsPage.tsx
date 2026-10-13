@@ -62,7 +62,7 @@ const MyBorrowsPage = () => {
             </div>
           ) : isErrorActive ? (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-              Error loading active loans: {errorActive?.message || "Failed to fetch records"}
+              Error loading active loans: {errorActive?.message || "Could not load records"}
             </div>
           ) : activeBorrows.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
@@ -90,7 +90,7 @@ const MyBorrowsPage = () => {
             </div>
           ) : isErrorHistory ? (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-              Error loading borrow history: {errorHistory?.message || "Failed to fetch records"}
+              Error loading borrow history: {errorHistory?.message || "Could not load records"}
             </div>
           ) : historyBorrows.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">

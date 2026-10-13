@@ -48,7 +48,7 @@ const BooksListPage = () => {
     return (
       <div className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
         <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-        <span>Error loading catalog: {error?.message || "Failed to fetch books"}</span>
+        <span>Error loading catalog: {error?.message || "Could not load books"}</span>
       </div>
     );
   }
