@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 from app.extensions import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.auth_service import AuthService
@@ -26,6 +26,7 @@ def google_auth():
   except ValueError as e:
     return jsonify({ "message": str(e) }), 400
   except Exception:
+    current_app.logger.exception("Google authentication failed")
     return jsonify({ "message": "Google authentication failed" }), 500
 
 # getting user 
