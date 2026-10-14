@@ -49,7 +49,11 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
-const UserTable: React.FC = () => {
+interface UserTableProps {
+  roleFilter?: "librarian" | "student";
+}
+
+const UserTable: React.FC<UserTableProps> = ({ roleFilter }) => {
   const { user: currentUser } = useAuth();
   const { data: users = [], isLoading, isError } = useGetAllUsers();
   const mutationUpdateRole = useUpdateUserRole();
@@ -61,13 +65,18 @@ const UserTable: React.FC = () => {
     (user) => String(user.id) !== String(currentUser?.id)
   );
 
-  // 2. Compute live metric totals
+  // 2. Narrow to the selected role when the sidebar submenu is used (stats stay overall)
+  const roleUsers = roleFilter
+    ? managedUsers.filter((user) => user.role === roleFilter)
+    : managedUsers;
+
+  // 3. Compute live metric totals
   const totalUsers = managedUsers.length;
   const activeCount = managedUsers.filter((u) => u.is_active).length;
   const inactiveCount = managedUsers.filter((u) => !u.is_active).length;
 
-  // 3. Search filter logic
-  const filteredUsers = managedUsers.filter(
+  // 4. Search filter logic
+  const filteredUsers = roleUsers.filter(
     (user) =>
       user.username.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
@@ -154,7 +163,7 @@ const UserTable: React.FC = () => {
             />
           </div>
           <p className="text-xs text-muted-foreground sm:self-center">
-            Showing {filteredUsers.length} of {totalUsers} users
+            Showing {filteredUsers.length} of {roleUsers.length} users
           </p>
         </div>
 

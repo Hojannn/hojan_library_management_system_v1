@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, useGetAllUsers } from "@/hooks/useAuth";
 import { Button } from "../ui/button";
 import {
   BookmarkCheck,
@@ -27,6 +27,7 @@ interface NavContentProps {
 interface NavChild {
   label: string;
   path: string;
+  count?: number;
 }
 
 interface NavItem {
@@ -40,8 +41,14 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  // null = follow the active route; otherwise the user's explicit toggle
-  const [submenuOpenOverride, setSubmenuOpenOverride] = useState<boolean | null>(null);
+  // Per-item override: absent key = follow the active route
+  const [submenuOpenOverride, setSubmenuOpenOverride] = useState<Record<string, boolean>>({});
+
+  // Role counts for the Users submenu (staff only; shares the ["users"] cache with the Users page)
+  const isStaff = user?.role === "admin" || user?.role === "librarian";
+  const { data: allUsers = [] } = useGetAllUsers({ enabled: isStaff });
+  const librarianCount = allUsers.filter((u) => u.role === "librarian").length;
+  const studentCount = allUsers.filter((u) => u.role === "student").length;
 
   const handleLogout = async () => {
     await logout();
@@ -72,7 +79,10 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
             { label: "Rejected", path: "/all-borrows/rejected" },
           ],
         },
-        { label: "Users", path: "/users", icon: User },
+        { label: "Users", path: "/users", icon: User, children: [
+          { label: "Librarians", path: "/users/librarian", count: librarianCount },
+          { label: "Students", path: "/users/student", count: studentCount },
+        ] },
         { label: "Books List", path: "/book-list", icon: BookOpen },
       ];
     }
@@ -82,8 +92,9 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
 
   const navItems = getNavItems();
 
-  // Submenu is open when the user toggled it open, or when a borrow-request route is active
-  const isSubmenuOpen = submenuOpenOverride ?? location.pathname.startsWith("/all-borrows");
+  // A submenu is open when the user toggled it open, or when one of its routes is active
+  const isSubmenuOpen = (itemPath: string) =>
+    submenuOpenOverride[itemPath] ?? location.pathname.startsWith(itemPath);
 
   return (
     <div className="flex flex-col h-full">
@@ -138,6 +149,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           const hasChildren = !!item.children && !collapsed;
 
           if (hasChildren) {
+            const submenuOpen = isSubmenuOpen(item.path);
             return (
               <div key={item.path}>
                 <div className="relative">
@@ -158,18 +170,20 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                   </NavLink>
                   <button
                     type="button"
-                    onClick={() => setSubmenuOpenOverride(!isSubmenuOpen)}
-                    aria-label={isSubmenuOpen ? `Collapse ${item.label} menu` : `Expand ${item.label} menu`}
-                    aria-expanded={isSubmenuOpen}
+                    onClick={() =>
+                      setSubmenuOpenOverride((prev) => ({ ...prev, [item.path]: !submenuOpen }))
+                    }
+                    aria-label={submenuOpen ? `Collapse ${item.label} menu` : `Expand ${item.label} menu`}
+                    aria-expanded={submenuOpen}
                     className="absolute inset-y-0 right-1 my-auto flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                   >
                     <ChevronDown
-                      className={cn("h-4 w-4 transition-transform duration-200", isSubmenuOpen && "rotate-180")}
+                      className={cn("h-4 w-4 transition-transform duration-200", submenuOpen && "rotate-180")}
                     />
                   </button>
                 </div>
 
-                {isSubmenuOpen && (
+                {submenuOpen && (
                   <ul className="mt-1 ml-3 space-y-1 border-l border-sidebar-border pl-3">
                     {item.children?.map((child) => (
                       <li key={child.path}>
@@ -178,14 +192,24 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                           onClick={onItemClick}
                           className={({ isActive }) =>
                             cn(
-                              "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
+                              "flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
                               isActive
                                 ? "bg-primary text-primary-foreground font-semibold"
                                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                             )
                           }
                         >
-                          {child.label}
+                          <span>{child.label}</span>
+                          {child.count !== undefined && (
+                            <span
+                              className={cn(
+                                "rounded-full px-2 py-0.5 text-xs font-medium",
+                                "bg-sidebar-accent text-sidebar-foreground/70"
+                              )}
+                            >
+                              {child.count}
+                            </span>
+                          )}
                         </NavLink>
                       </li>
                     ))}
