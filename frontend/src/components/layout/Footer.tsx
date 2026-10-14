@@ -1,7 +1,6 @@
 import { BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 
 interface FooterProps {
   libraryName?: string;
@@ -13,16 +12,6 @@ export const Footer = ({
   className,
 }: FooterProps) => {
   const year = new Date().getFullYear();
-  const { user } = useAuth();
-  const isStaff = user?.role === "admin" || user?.role === "librarian";
-  const links = isStaff
-    ? [
-        { label: "Dashboard", to: "/dashboard" },
-        { label: "Books List", to: "/book-list" },
-        { label: "Borrow Requests", to: "/all-borrows" },
-        { label: "Users", to: "/users" },
-      ]
-    : [];
 
   return (
     <footer

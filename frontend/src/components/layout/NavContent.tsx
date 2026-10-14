@@ -4,13 +4,16 @@ import {
   BookmarkCheck,
   BookmarkIcon,
   BookOpen,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
   LogOut,
   User
 } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -21,9 +24,24 @@ interface NavContentProps {
   onToggle?: () => void;
 }
 
+interface NavChild {
+  label: string;
+  path: string;
+}
+
+interface NavItem {
+  label: string;
+  path: string;
+  icon: LucideIcon;
+  children?: NavChild[];
+}
+
 export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onItemClick, onToggle }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // null = follow the active route; otherwise the user's explicit toggle
+  const [submenuOpenOverride, setSubmenuOpenOverride] = useState<boolean | null>(null);
 
   const handleLogout = async () => {
     await logout();
@@ -31,7 +49,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   };
 
   // Define navigation items directly per role
-  const getNavItems = () => {
+  const getNavItems = (): NavItem[] => {
     if (user?.role === "student") {
       return [
         { label: "Books", path: "/books", icon: BookOpen },
@@ -42,7 +60,18 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
     if (user?.role === "admin" || user?.role === "librarian") {
       return [
         { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-        { label: "Borrow Requests", path: "/all-borrows", icon: BookmarkIcon },
+        {
+          label: "Borrow Requests",
+          path: "/all-borrows",
+          icon: BookmarkIcon,
+          children: [
+            { label: "Waiting/Pending", path: "/all-borrows/pending" },
+            { label: "Active", path: "/all-borrows/active" },
+            { label: "Overdue", path: "/all-borrows/overdue" },
+            { label: "Returned", path: "/all-borrows/returned" },
+            { label: "Rejected", path: "/all-borrows/rejected" },
+          ],
+        },
         { label: "Users", path: "/users", icon: User },
         { label: "Books List", path: "/book-list", icon: BookOpen },
       ];
@@ -52,6 +81,9 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   };
 
   const navItems = getNavItems();
+
+  // Submenu is open when the user toggled it open, or when a borrow-request route is active
+  const isSubmenuOpen = submenuOpenOverride ?? location.pathname.startsWith("/all-borrows");
 
   return (
     <div className="flex flex-col h-full">
@@ -103,6 +135,66 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
       <nav className="flex-1 space-y-2 p-2">
         {navItems.map((item) => {
           const Icon = item.icon;
+          const hasChildren = !!item.children && !collapsed;
+
+          if (hasChildren) {
+            return (
+              <div key={item.path}>
+                <div className="relative">
+                  <NavLink
+                    to={item.path}
+                    onClick={onItemClick}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset pr-9",
+                        isActive
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )
+                    }
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                  <button
+                    type="button"
+                    onClick={() => setSubmenuOpenOverride(!isSubmenuOpen)}
+                    aria-label={isSubmenuOpen ? `Collapse ${item.label} menu` : `Expand ${item.label} menu`}
+                    aria-expanded={isSubmenuOpen}
+                    className="absolute inset-y-0 right-1 my-auto flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                  >
+                    <ChevronDown
+                      className={cn("h-4 w-4 transition-transform duration-200", isSubmenuOpen && "rotate-180")}
+                    />
+                  </button>
+                </div>
+
+                {isSubmenuOpen && (
+                  <ul className="mt-1 ml-3 space-y-1 border-l border-sidebar-border pl-3">
+                    {item.children?.map((child) => (
+                      <li key={child.path}>
+                        <NavLink
+                          to={child.path}
+                          onClick={onItemClick}
+                          className={({ isActive }) =>
+                            cn(
+                              "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
+                              isActive
+                                ? "bg-primary text-primary-foreground font-semibold"
+                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            )
+                          }
+                        >
+                          {child.label}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          }
+
           return (
             <NavLink
               key={item.path}
