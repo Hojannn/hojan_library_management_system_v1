@@ -16,11 +16,12 @@ export const useAuth = () => {
 };
 
 
-export const useGetAllUsers = () => {
+export const useGetAllUsers = (options?: { enabled?: boolean }) => {
 
   return useQuery({
     queryKey: ["users"],
-    queryFn: getAllUsers
+    queryFn: getAllUsers,
+    enabled: options?.enabled ?? true,
   });
 };
 
