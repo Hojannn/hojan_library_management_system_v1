@@ -1,18 +1,13 @@
 import LoginForm from "@/features/auth/components/LoginForm";
 import GLogin from "@/features/auth/components/GLogin";
 import { Link } from "react-router-dom";
+import AuthBg from "@/components/layout/AuthBg";
 
 const LoginPage = () => {
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-foreground overflow-y-auto">
 
-      <div
-        className="fixed inset-0 bg-cover bg-center opacity-85"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1600&auto=format&fit=crop')`,
-        }}
-      />
-      <div className="fixed inset-0 bg-foreground/20 backdrop-blur-[2px]" />
+      <AuthBg />
 
 
       <div className="relative z-10 w-full max-w-[440px] bg-card rounded-xl p-6 sm:p-8 shadow-xl space-y-4 my-auto">
