@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import { useGetAllUsers } from "@/hooks/useAuth";
 import { useAdminBorrows } from "@/hooks/useBorrows";
 import { useBooks } from "@/hooks/useBooks";
@@ -10,7 +11,6 @@ import {
   Clock,
   Inbox,
   Layers,
-  Loader2,
   Users,
 } from "lucide-react";
 import { useMemo } from "react";
@@ -62,11 +62,7 @@ const AdminDashboardPage = () => {
   }, [users, borrows, books, categories]);
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingState className="text-primary" containerClassName="h-64" label="Loading dashboard" />;
   }
 
   return (

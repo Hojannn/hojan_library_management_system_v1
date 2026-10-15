@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import AdminBorrowsTable from "@/features/borrows/components/AdminBorrowsTable";
 import {
   useAdminBorrows,
@@ -14,47 +14,58 @@ import {
   BookOpen,
   Clock,
   Inbox,
-  Loader2,
   Search,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+
+const TAB_VALUES = ["all", "pending", "active", "overdue", "returned", "rejected"] as const;
+type TabValue = (typeof TAB_VALUES)[number];
 
 const AdminBorrowsPage = () => {
   const { data: borrows = [], isLoading, isError, error } = useAdminBorrows();
+  const { status } = useParams();
 
   // Action Mutations
   const returnMutation = useApproveReturn();
   const approveMutation = useApproveBorrow();
   const rejectMutation = useRejectBorrow();
 
-  const [activeTab, setActiveTab] = useState("all");
+  const activeTab: TabValue = TAB_VALUES.includes(status as TabValue) ? (status as TabValue) : "all";
   const [search, setSearch] = useState("");
 
   // Categorize borrow records based on status & dates
-  const { pendingBorrows, activeBorrows, overdueBorrows, returnedBorrows } =
-    useMemo(() => {
-      const now = new Date();
+  const {
+    pendingBorrows,
+    activeBorrows,
+    overdueBorrows,
+    returnedBorrows,
+    rejectedBorrows,
+  } = useMemo(() => {
+    const now = new Date();
 
-      const pending = borrows.filter((b) => b.status === "PENDING_BORROW");
-      const active = borrows.filter(
-        (b) => b.status === "BORROWED" || b.status === "PENDING_RETURN"
-      );
-      const returned = borrows.filter(
-        (b) => b.status === "RETURNED" || !!b.returned_at
-      );
-      const overdue = borrows.filter(
-        (b) =>
-          b.status === "OVERDUE" ||
-          (b.status === "BORROWED" && b.due_date && new Date(b.due_date) < now)
-      );
+    const pending = borrows.filter((b) => b.status === "PENDING_BORROW");
+    const active = borrows.filter(
+      (b) => b.status === "BORROWED" || b.status === "PENDING_RETURN"
+    );
+    const returned = borrows.filter(
+      (b) => b.status === "RETURNED" || !!b.returned_at
+    );
+    const overdue = borrows.filter(
+      (b) =>
+        b.status === "OVERDUE" ||
+        (b.status === "BORROWED" && b.due_date && new Date(b.due_date) < now)
+    );
+    const rejected = borrows.filter((b) => b.status === "REJECTED");
 
-      return {
-        pendingBorrows: pending,
-        activeBorrows: active,
-        overdueBorrows: overdue,
-        returnedBorrows: returned,
-      };
-    }, [borrows]);
+    return {
+      pendingBorrows: pending,
+      activeBorrows: active,
+      overdueBorrows: overdue,
+      returnedBorrows: returned,
+      rejectedBorrows: rejected,
+    };
+  }, [borrows]);
 
   // Unified status tracker for single-row spinners
   const isProcessing =
@@ -65,11 +76,7 @@ const AdminBorrowsPage = () => {
     (rejectMutation.variables as string);
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingState className="text-primary" containerClassName="h-64" label="Loading borrow records" />;
   }
 
   if (isError) {
@@ -80,6 +87,17 @@ const AdminBorrowsPage = () => {
     );
   }
 
+  // Records shown based on the sidebar submenu route
+  const visibleBorrows = {
+    all: borrows,
+    pending: pendingBorrows,
+    active: activeBorrows,
+    overdue: overdueBorrows,
+    returned: returnedBorrows,
+    rejected: rejectedBorrows,
+  }[activeTab];
+
+  // Records Table (filtered by sidebar submenu route)
   return (
     <div className="space-y-6">
       <div className="border-b pb-4">
@@ -169,101 +187,30 @@ const AdminBorrowsPage = () => {
         </Card>
       </div>
 
-      {/* Navigation Tabs and Search */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList className="grid w-full max-w-2xl grid-cols-5 h-9!">
-            <TabsTrigger value="all">All ({borrows.length})</TabsTrigger>
-            <TabsTrigger value="pending">
-              Waiting ({pendingBorrows.length})
-            </TabsTrigger>
-            <TabsTrigger value="active">Active ({activeBorrows.length})</TabsTrigger>
-            <TabsTrigger
-              value="overdue"
-              className="data-active:text-destructive!"
-            >
-              Overdue ({overdueBorrows.length})
-            </TabsTrigger>
-            <TabsTrigger value="returned">Returned ({returnedBorrows.length})</TabsTrigger>
-          </TabsList>
-
-          <div className="relative max-w-sm w-full">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by user or book..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-10 pl-9"
-            />
-          </div>
+      {/* Search */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+        <div className="relative max-w-sm w-full">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by user or book..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-10 pl-9"
+          />
         </div>
+      </div>
 
-        {/* Tab Content Wrappers */}
-        <TabsContent value="all">
-          <AdminBorrowsTable
-            key={search}
-            borrows={borrows}
-            search={search}
-            onApproveBorrow={(id) => approveMutation.mutate(id)}
-            onRejectBorrow={(id) => rejectMutation.mutate(id)}
-            onConfirmReturn={(id) => returnMutation.mutate(id)}
-            isProcessing={isProcessing}
-            processingId={processingId}
-          />
-        </TabsContent>
-
-        <TabsContent value="pending">
-          <AdminBorrowsTable
-            key={search}
-            borrows={pendingBorrows}
-            search={search}
-            onApproveBorrow={(id) => approveMutation.mutate(id)}
-            onRejectBorrow={(id) => rejectMutation.mutate(id)}
-            onConfirmReturn={(id) => returnMutation.mutate(id)}
-            isProcessing={isProcessing}
-            processingId={processingId}
-          />
-        </TabsContent>
-
-        <TabsContent value="active">
-          <AdminBorrowsTable
-            key={search}
-            borrows={activeBorrows}
-            search={search}
-            onApproveBorrow={(id) => approveMutation.mutate(id)}
-            onRejectBorrow={(id) => rejectMutation.mutate(id)}
-            onConfirmReturn={(id) => returnMutation.mutate(id)}
-            isProcessing={isProcessing}
-            processingId={processingId}
-          />
-        </TabsContent>
-
-        <TabsContent value="overdue">
-          <AdminBorrowsTable
-            key={search}
-            borrows={overdueBorrows}
-            search={search}
-            onApproveBorrow={(id) => approveMutation.mutate(id)}
-            onRejectBorrow={(id) => rejectMutation.mutate(id)}
-            onConfirmReturn={(id) => returnMutation.mutate(id)}
-            isProcessing={isProcessing}
-            processingId={processingId}
-          />
-        </TabsContent>
-
-        <TabsContent value="returned">
-          <AdminBorrowsTable
-            key={search}
-            borrows={returnedBorrows}
-            search={search}
-            onApproveBorrow={(id) => approveMutation.mutate(id)}
-            onRejectBorrow={(id) => rejectMutation.mutate(id)}
-            onConfirmReturn={(id) => returnMutation.mutate(id)}
-            isProcessing={isProcessing}
-            processingId={processingId}
-          />
-        </TabsContent>
-      </Tabs>
+      {/* Records Table (filtered by sidebar submenu route) */}
+      <AdminBorrowsTable
+        key={search}
+        borrows={visibleBorrows}
+        search={search}
+        onApproveBorrow={(id) => approveMutation.mutate(id)}
+        onRejectBorrow={(id) => rejectMutation.mutate(id)}
+        onConfirmReturn={(id) => returnMutation.mutate(id)}
+        isProcessing={isProcessing}
+        processingId={processingId}
+      />
     </div>
   );
 };

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useBooks } from "@/hooks/useBooks";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import {
   ArrowRight,
-  Loader2,
   Search,
   BookOpen,
 } from "lucide-react";
@@ -93,11 +93,7 @@ const BookCatalogPage = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-      </div>
-    );
+    return <LoadingState containerClassName="h-96" label="Loading catalog" />;
   }
 
   if (isError) {

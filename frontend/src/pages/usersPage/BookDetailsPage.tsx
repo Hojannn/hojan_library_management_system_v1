@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import { useGetBookById, useGetBookReviewStats } from "@/hooks/useBooks";
 import { useState } from "react";
 import { 
   ArrowLeft, 
   Bookmark, 
   Heart, 
-  Loader2, 
   Star, 
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -30,11 +30,7 @@ const BookDetailsPage = () => {
   const borrowMutation = useCreateBorrows();
 
   if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-      </div>
-    );
+    return <LoadingState containerClassName="h-96" label="Loading book details" />;
   }
 
   if (isError || !book) {
@@ -151,11 +147,7 @@ const BookDetailsPage = () => {
               disabled={!isAvailable || borrowMutation.isPending}
               className="gap-2 px-7 py-5 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-none hover:opacity-90"
             >
-              {borrowMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Bookmark className="w-4 h-4" />
-              )}
+              <Bookmark className="w-4 h-4" />
               {!isAvailable ? "Out of Stock" : borrowMutation.isPending ? "Borrowing..." : "Borrow"}
             </Button>
             <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-black/10 bg-transparent shadow-none hover:bg-black/5">
