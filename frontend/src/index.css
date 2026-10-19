@@ -164,19 +164,19 @@
   --radius: 0.5rem;
 
   /* ================================
-     Sidebar (Espresso, per design system)
+     Sidebar (Warm neutral palette)
      ================================ */
 
-  --sidebar: #241c18;
-  --sidebar-foreground: #fbf9f6;
+  --sidebar: #eee4d9;
+  --sidebar-foreground: #2f241e;
 
   --sidebar-primary: #7a5138;
   --sidebar-primary-foreground: #ffffff;
 
-  --sidebar-accent: rgba(255, 255, 255, 0.08);
-  --sidebar-accent-foreground: #fbf9f6;
+  --sidebar-accent: #e5d7ca;
+  --sidebar-accent-foreground: #2f241e;
 
-  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-border: #e5dcd3;
   --sidebar-ring: #a97850;
 }
 

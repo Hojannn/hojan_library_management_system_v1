@@ -108,6 +108,10 @@ const BookCatalogPage = () => {
     <div className="max-w-7xl mx-auto space-y-6 pb-12 px-0 sm:px-0">
       {/* Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-black text-white p-8 md:px-5 flex items-center justify-between shadow-md">
+         {/* Background Image */}
+        <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: "url('/images/lib_banner.webp')",}}/>
+        {/* Dark Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#241711]/95 via-[#493022]/80 to-[#7A5138]/20" />
         <div className="space-y-3 z-10 max-w-lg">
           <span className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-semibold tracking-wider uppercase text-purple-100 border border-white/10">
             CURATED SELECTION
@@ -127,9 +131,6 @@ const BookCatalogPage = () => {
               VIEW NOW <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-        <div className="hidden lg:flex relative shrink-0 items-center justify-center pr-8 opacity-40">
-          <BookOpen className="w-48 h-48 text-purple-200 stroke-[1.2]" />
         </div>
       </div>
 

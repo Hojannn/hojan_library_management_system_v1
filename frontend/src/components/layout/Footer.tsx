@@ -31,7 +31,7 @@ export const Footer = ({
             Discover books, manage borrowing, and keep your library connected.
           </p>
           <nav>
-            <Link to="/about" className="pr-4 text-primary">About</Link>
+            <Link to="/about" className="pl-30 text-sm w-full leading-relaxed text-muted-foreground">About</Link>
           </nav>
         </div>
       </div>

@@ -106,7 +106,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
         )}
       >
         <div className={cn("flex items-center gap-3 overflow-hidden", collapsed && "mx-auto")}>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold">
             <BookOpen className="h-5 w-5" />
           </div>
           {!collapsed && (
@@ -120,7 +120,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
             variant="ghost"
             size="icon"
             onClick={onToggle}
-            className="shrink-0 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            className="shrink-0 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
             aria-label="Collapse sidebar"
           >
             <ChevronLeft className="size-5" />
@@ -134,7 +134,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           <Button
             variant="ghost"
             onClick={onToggle}
-            className="w-full h-8 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            className="w-full h-8 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
             aria-label="Expand sidebar"
           >
             <ChevronRight className="size-5" />
@@ -160,8 +160,8 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                       cn(
                         "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset pr-9",
                         isActive
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )
                     }
                   >
@@ -175,7 +175,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                     }
                     aria-label={submenuOpen ? `Collapse ${item.label} menu` : `Expand ${item.label} menu`}
                     aria-expanded={submenuOpen}
-                    className="absolute inset-y-0 right-1 my-auto flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                    className={cn("absolute inset-y-0 right-1 my-auto flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring", location.pathname.startsWith(item.path) ? "text-sidebar-primary-foreground" : "text-sidebar-foreground")}
                   >
                     <ChevronDown
                       className={cn("h-4 w-4 transition-transform duration-200", submenuOpen && "rotate-180")}
@@ -194,8 +194,8 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                             cn(
                               "flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
                               isActive
-                                ? "bg-primary text-primary-foreground font-semibold"
-                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                             )
                           }
                         >
@@ -204,7 +204,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                             <span
                               className={cn(
                                 "rounded-full px-2 py-0.5 text-xs font-medium",
-                                "bg-sidebar-accent text-sidebar-foreground/70"
+                                "bg-sidebar-accent text-sidebar-foreground"
                               )}
                             >
                               {child.count}
@@ -228,8 +228,8 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                 cn(
                   "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
                   isActive
-                    ? "bg-primary text-primary-foreground font-semibold"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   collapsed && "justify-center px-0"
                 )
               }
@@ -257,7 +257,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-sidebar-foreground truncate">{user.username}</p>
-              <p className="text-xs text-sidebar-foreground/60 truncate">{user.email}</p>
+              <p className="text-xs text-sidebar-foreground truncate">{user.email}</p>
             </div>
           </NavLink>
         )}
@@ -266,7 +266,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           variant="ghost"
           onClick={handleLogout}
           className={cn(
-            "w-full h-10 justify-start gap-3 rounded-md px-3 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+            "w-full h-10 justify-start gap-3 rounded-md px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
             collapsed && "justify-center px-0"
           )}
           title={collapsed ? "Logout" : undefined}

@@ -12,6 +12,7 @@ import AdminUsersPage from "./pages/adminPage/AdminUsersPage"
 import AdminDashboardPage from "./pages/adminPage/AdminDashboardPage"
 import BookDetailsPage from "./pages/usersPage/BookDetailsPage"
 import UsersProfile from "./pages/usersPage/UsersProfile"
+import About from "./pages/About"
 
 
 const App = () => {
@@ -28,6 +29,7 @@ const App = () => {
       <Route element={<ProtectedRoute />}>
         {/* Routes with authentication */}
         <Route element={<MainLayout />}>
+          <Route path="/about" element={<About />} />
           <Route path="/books" element={<BookCatalogPage/>} />
           <Route path="/books/:id" element={<BookDetailsPage />} />
           <Route path="/my-borrows" element={<MyBorrowsPage />} />
