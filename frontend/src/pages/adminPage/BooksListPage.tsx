@@ -17,6 +17,7 @@ import { useArchiveBook, useRestoreBook, useStaffBooks } from "@/hooks/useBooks"
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 10;
+const EMPTY_BOOKS: Book[] = [];
 
 const BooksListPage = () => {
   const activeQuery = useStaffBooks("active");
@@ -37,8 +38,8 @@ const BooksListPage = () => {
   const [restoreBook, setRestoreBook] = useState<Book | null>(null);
   const [categoryOpen, setCategoryOpen] = useState(false);
 
-  const activeBooks = activeQuery.data || [];
-  const archivedBooks = archivedQuery.data || [];
+  const activeBooks = activeQuery.data ?? EMPTY_BOOKS;
+  const archivedBooks = archivedQuery.data ?? EMPTY_BOOKS;
   const source = state === "active" ? activeBooks : archivedBooks;
   const summary = getBookSummary(activeBooks);
   const categories = useMemo(() => Array.from(new Map([...activeBooks, ...archivedBooks].filter((book) => book.category_id).map((book) => [book.category_id, book.category_name || "Uncategorized"]))).sort((a, b) => a[1].localeCompare(b[1])), [activeBooks, archivedBooks]);
