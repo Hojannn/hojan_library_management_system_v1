@@ -4,11 +4,13 @@ import { AlertCircle, ChevronLeft, ChevronRight, FolderCog, Plus, Search } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-spinner";
+import BookArchiveDialog from "@/features/books/components/books/BookArchiveDialog";
 import BookDetailsDialog from "@/features/books/components/books/BookDetailsDialog";
 import BookFormModal from "@/features/books/components/books/BookFormModal";
+import BookRestoreDialog from "@/features/books/components/books/BookRestoreDialog";
 import BooksTable from "@/features/books/components/books/BooksTable";
 import CategoryModal from "@/features/books/components/categories/CategoryModal";
-import { filterAndSortBooks, getBookSummary } from "@/features/books/lib/bookListView";
+import { filterAndSortBooks, getBookCirculation, getBookSummary } from "@/features/books/lib/bookListView";
 import type { Book, StaffBookState } from "@/features/books/types/book.types";
 import { useAdminBorrows } from "@/hooks/useBorrows";
 import { useArchiveBook, useRestoreBook, useStaffBooks } from "@/hooks/useBooks";
@@ -31,6 +33,8 @@ const BooksListPage = () => {
   const [page, setPage] = useState(1);
   const [formBook, setFormBook] = useState<Book | null | undefined>(undefined);
   const [detailsBook, setDetailsBook] = useState<Book | null>(null);
+  const [archiveBook, setArchiveBook] = useState<Book | null>(null);
+  const [restoreBook, setRestoreBook] = useState<Book | null>(null);
   const [categoryOpen, setCategoryOpen] = useState(false);
 
   const activeBooks = activeQuery.data || [];
@@ -47,8 +51,10 @@ const BooksListPage = () => {
 
   const switchState = (next: StaffBookState) => { setState(next); setPage(1); setSearch(""); setCategory("all"); setAvailability("all"); setArchiveDate(""); setSort(next === "active" ? "recent" : "archived"); };
   const startEdit = (book: Book) => { setDetailsBook(null); setFormBook(book); };
-  const startArchive = (book: Book) => { setDetailsBook(null); if (window.confirm(`Archive ${book.title}?`)) archiveMutation.mutate(book.id); };
-  const startRestore = (book: Book) => { if (window.confirm(`Restore ${book.title}?`)) restoreMutation.mutate(book.id); };
+  const startArchive = (book: Book) => { setDetailsBook(null); setArchiveBook(book); };
+  const startRestore = (book: Book) => setRestoreBook(book);
+  const confirmArchive = (book: Book) => archiveMutation.mutate(book.id, { onSuccess: () => setArchiveBook(null) });
+  const confirmRestore = (book: Book) => restoreMutation.mutate(book.id, { onSuccess: () => setRestoreBook(null) });
 
   if (loading) return <LoadingState className="text-primary" containerClassName="min-h-[70vh]" label="Loading books" />;
   if (failed) return <div className="flex gap-2 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive"><AlertCircle className="size-4" />Could not load the books catalog.</div>;
@@ -76,6 +82,8 @@ const BooksListPage = () => {
     </section>
     <BookDetailsDialog book={detailsBook} borrows={borrowQuery.isError ? [] : (borrowQuery.data || [])} open={!!detailsBook} onOpenChange={(open) => !open && setDetailsBook(null)} onEdit={startEdit} onArchive={startArchive} />
     <BookFormModal isOpen={formBook !== undefined} onClose={() => setFormBook(undefined)} book={formBook} />
+    <BookArchiveDialog open={!!archiveBook} book={archiveBook} circulation={getBookCirculation(archiveBook?.id || "", borrowQuery.isError ? [] : (borrowQuery.data || []))} isPending={archiveMutation.isPending} onOpenChange={(open) => !open && setArchiveBook(null)} onConfirm={confirmArchive} />
+    <BookRestoreDialog open={!!restoreBook} book={restoreBook} isPending={restoreMutation.isPending} onOpenChange={(open) => !open && setRestoreBook(null)} onConfirm={confirmRestore} />
     <CategoryModal isOpen={categoryOpen} onClose={() => setCategoryOpen(false)} />
   </div>;
 };
