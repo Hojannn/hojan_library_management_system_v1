@@ -31,7 +31,11 @@ export interface Book {
   average_rating?: number;
   total_reviews?: number;
   created_at?: string;
+  is_deleted?: boolean;
+  archived_at?: string | null;
 }
+
+export type StaffBookState = "active" | "archived";
 
 export interface BookResponse {
   message: string;

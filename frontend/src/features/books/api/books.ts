@@ -1,5 +1,5 @@
 import { api } from "@/services/api";
-import type { Book, BookResponse, ReviewResponse, ReviewStatsResponse } from "../types/book.types";
+import type { Book, BookResponse, ReviewResponse, ReviewStatsResponse, StaffBookState } from "../types/book.types";
 import type { BookFormData } from "../types/book.schema";
 import { type IReview, ReviewEntity } from "../models/ReviewEntity";
 
@@ -37,6 +37,13 @@ export const getBooks = async(categoryId?: string): Promise<Book[]> => {
   const { data } = await api.get("/books", { params });
 
   return Array.isArray(data) ? data : data.books || [];
+};
+
+export const getStaffBooks = async(state: StaffBookState): Promise<Book[]> => {
+  const { data } = await api.get<{ books: Book[] }>("/books/admin/catalog", {
+    params: { state },
+  });
+  return data.books;
 };
 
 export const getBookById = async(bookId: string): Promise<Book> => {
@@ -97,6 +104,12 @@ export const updateBook = async(
   return res.data;
 };
 
-export const deleteBook = async(bookId: string): Promise<void> => {
-  await api.delete(`/books/${bookId}`);
+export const deleteBook = async(bookId: string): Promise<BookResponse> => {
+  const { data } = await api.delete<BookResponse>(`/books/${bookId}`);
+  return data;
+};
+
+export const restoreBook = async(bookId: string): Promise<BookResponse> => {
+  const { data } = await api.put<BookResponse>(`/books/restore/${bookId}`);
+  return data;
 };

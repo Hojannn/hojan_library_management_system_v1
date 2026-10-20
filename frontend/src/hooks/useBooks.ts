@@ -1,7 +1,7 @@
-import { createBook, deleteBook, getBookById, getBookRecommendations, getBookReviews, getBookReviewStats, getBooks, submitReview, updateBook } from "@/features/books/api/books";
+import { createBook, deleteBook, getBookById, getBookRecommendations, getBookReviews, getBookReviewStats, getBooks, getStaffBooks, restoreBook, submitReview, updateBook } from "@/features/books/api/books";
 import { ReviewEntity } from "@/features/books/models/ReviewEntity";
 import type { BookFormData } from "@/features/books/types/book.schema";
-import { type Book } from "@/features/books/types/book.types";
+import { type Book, type StaffBookState } from "@/features/books/types/book.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -36,6 +36,20 @@ export const useGetBookReviews = (bookId?: string) => {
     enabled: !!bookId,
     select: (data) => data.map((reviewData) => new ReviewEntity(reviewData)),
   });
+};
+
+export const useStaffBooks = (state: StaffBookState) => {
+  return useQuery<Book[]>({
+    queryKey: ["books", "staff", state],
+    queryFn: () => getStaffBooks(state),
+    staleTime: 1000 * 60,
+  });
+};
+
+const invalidateBookCatalogs = (queryClient: ReturnType<typeof useQueryClient>) => {
+  queryClient.invalidateQueries({ queryKey: ["books", "staff"] });
+  queryClient.invalidateQueries({ queryKey: ["books"] });
+  queryClient.invalidateQueries({ queryKey: ["book"] });
 };
 
 export const useSubmitReview = (bookId: string) => {
@@ -126,5 +140,33 @@ export const useDeleteBooks = () => {
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data?.message || "Failed to delete book")
     }
+  });
+};
+
+export const useArchiveBook = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteBook,
+    onSuccess: () => {
+      invalidateBookCatalogs(queryClient);
+      toast.success("Book archived successfully");
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to archive book");
+    },
+  });
+};
+
+export const useRestoreBook = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restoreBook,
+    onSuccess: () => {
+      invalidateBookCatalogs(queryClient);
+      toast.success("Book restored successfully");
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to restore book");
+    },
   });
 };
