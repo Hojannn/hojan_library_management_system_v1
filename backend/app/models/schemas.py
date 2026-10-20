@@ -20,6 +20,8 @@ class BookDict(TypedDict):
   total_reviews: int
   pages: int | None
   created_at: str | None
+  is_deleted: bool
+  archived_at: str | None
 
 
 class StudentDict(TypedDict):

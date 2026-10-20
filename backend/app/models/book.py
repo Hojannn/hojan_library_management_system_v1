@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.base import BaseEntity
 from app.models.schemas import BookDict
@@ -16,6 +18,7 @@ class Book(BaseEntity): # Inheritance
   pages = db.Column(db.Integer)
   created_at = db.Column(db.DateTime, server_default=db.func.now())
   is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+  archived_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
   # relationships
   borrows = db.relationship("Borrow", backref="book", lazy=True)
@@ -85,6 +88,10 @@ class Book(BaseEntity): # Inheritance
 
   # Polymorphism
   def to_dict(self) -> BookDict:
+    archived_at = self.archived_at
+    if archived_at and archived_at.tzinfo is None:
+      archived_at = archived_at.replace(tzinfo=timezone.utc)
+
     return {
         "id": str(self.id) if self.id else None,
         "isbn": self.isbn,
@@ -99,5 +106,7 @@ class Book(BaseEntity): # Inheritance
         "average_rating": self.average_rating,
         "total_reviews": self.total_reviews,
         "pages": self.pages,
-        "created_at": self.created_at.isoformat() if self.created_at else None
+        "created_at": self.created_at.isoformat() if self.created_at else None,
+        "is_deleted": bool(self.is_deleted),
+        "archived_at": archived_at.astimezone(timezone.utc).isoformat() if archived_at else None
     }
