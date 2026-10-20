@@ -1,10 +1,18 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { BookOpen, UserRound } from "lucide-react";
+import {
+  ArrowLeftRight,
+  ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  LayoutGrid,
+  UserRound,
+} from "lucide-react";
 
 // Replace these values with the project's final copy and developer details.
 const project = {
@@ -15,18 +23,72 @@ const project = {
     "This project is currently under development. Additional features and improvements are planned to make managing and using the library even simpler.",
 };
 
+const features = [
+  {
+    icon: BookOpen,
+    title: "Browse & discover",
+    description: "Explore the catalog and find available titles by category.",
+  },
+  {
+    icon: ArrowLeftRight,
+    title: "Borrow & return",
+    description: "Keep track of loans, due dates, and returned copies.",
+  },
+  {
+    icon: LayoutGrid,
+    title: "Manage the library",
+    description: "Organize books, categories, users, and borrowing records.",
+  },
+];
+
+const techStack = ["React", "TypeScript", "Tailwind CSS", "Flask", "PostgreSQL"];
+
 type Developer = {
   id: string;
   name: string;
   role: string;
+  bio: string;
   image: string;
   socials: Partial<Record<"github" | "facebook" | "instagram", string>>;
 };
 
 const developers: Developer[] = [
-  { id: "developer-1", name: "Eryck Jouhann V. Cadawas", role: "Decepticon", image: "/images/hojan.webp", socials: { github: "https://github.com/Hojannn", facebook: "https://www.facebook.com/jouhanncadawas", instagram: "https://www.instagram.com/hojaaann/?hl=en" } },
-  { id: "developer-2", name: "Carl Jasper A. Ramos", role: "Backshot Developer", image: "/images/cj.webp", socials: { github: "https://github.com/zora-ao?fbclid=IwY2xjawVC_PtleHRuA2FlbQIxMQBwZG9mA3NydGMGYXBwX2lkATAAAR44MoM7B0RsS8slu3uZK2DWAcZQ65f8rh_KCKGQAl0CfuQe2-MFvG0nP7vqIQ_aem_YW85JSTpqUC9G7Bu-t_wHw", facebook: "https://www.facebook.com/carljaspera.ramos", instagram: "https://www.instagram.com/crldkl/" } },
-  { id: "developer-3", name: "Dolf Louise P. Felipe", role: "Project Demo (Demolition)", image: "/images/dolf.webp", socials: { github: "https://github.com/aintlumii?fbclid=IwY2xjawVC_KtleHRuA2FlbQIxMQBwZG9mA3NydGMGYXBwX2lkATAAAR5eCTjynQr7KL4jq1t02_H6FMUrPd16Q_YqnkMU95QJO3RLQFzedAuVerYMsQ_aem_kly-EbMvYlZ_M92x-Qqlgw", facebook: "https://www.facebook.com/dolflouise.felipe", instagram: "https://www.instagram.com/aintlumi_?exln=MWxkdHJsd2MydXpxbA==" } },
+  {
+    id: "developer-1",
+    name: "Eryck Jouhann V. Cadawas",
+    role: "Decepticon",
+    bio: "Focused on the frontend experience and the interfaces readers use every day.",
+    image: "/images/hojan.webp",
+    socials: {
+      github: "https://github.com/Hojannn",
+      facebook: "https://www.facebook.com/jouhanncadawas",
+      instagram: "https://www.instagram.com/hojaaann/",
+    },
+  },
+  {
+    id: "developer-2",
+    name: "Carl Jasper A. Ramos",
+    role: "Backshot Developer",
+    bio: "Works on the backend, data, and the services that keep the library running.",
+    image: "/images/cj.webp",
+    socials: {
+      github: "https://github.com/zora-ao",
+      facebook: "https://www.facebook.com/carljaspera.ramos",
+      instagram: "https://www.instagram.com/crldkl/",
+    },
+  },
+  {
+    id: "developer-3",
+    name: "Dolf Louise P. Felipe",
+    role: "Project Demo (Demolition)",
+    bio: "Helps shape and demonstrate the project from concept to working demo.",
+    image: "/images/dolf.webp",
+    socials: {
+      github: "https://github.com/aintlumii",
+      facebook: "https://www.facebook.com/dolflouise.felipe",
+      instagram: "https://www.instagram.com/aintlumi_/",
+    },
+  },
 ];
 
 const socialPlatforms = [
@@ -49,12 +111,33 @@ const About = () => {
   const [selectedDeveloper, setSelectedDeveloper] = useState<Developer>(developers[0]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-12">
-      <header className="space-y-2 border-b border-border pb-4">
-        <h1 className="text-2xl font-bold tracking-tight">About Us</h1>
-        <p className="text-sm text-muted-foreground">
-          Get to know our project and the people behind it.
-        </p>
+    <div className="mx-auto max-w-6xl space-y-10 pb-12">
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-secondary via-secondary/60 to-primary/10 p-6 sm:p-8">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-primary/10 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 left-1/3 size-56 rounded-full bg-accent/10 blur-3xl"
+        />
+        <div className="relative space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <BookOpen className="size-5" aria-hidden="true" />
+            </div>
+            <Badge variant="secondary" className="gap-1.5 border border-primary/15">
+              <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
+              Under Development
+            </Badge>
+          </div>
+          <div className="max-w-2xl space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">About Us</h1>
+            <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Get to know our project and the people behind it.
+            </p>
+          </div>
+        </div>
       </header>
 
       <section aria-labelledby="about-project-heading">
@@ -76,10 +159,39 @@ const About = () => {
               </h2>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm leading-relaxed text-muted-foreground">
+          <CardContent className="space-y-6">
+            <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
               {project.description}
             </p>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {features.map(({ icon: Icon, title, description }) => (
+                <div
+                  key={title}
+                  className="flex gap-3 rounded-lg border border-border/70 bg-secondary/40 p-3"
+                >
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <Icon className="size-4" aria-hidden="true" />
+                  </span>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">{title}</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Built with
+              </span>
+              {techStack.map((tech) => (
+                <Badge key={tech} variant="outline">
+                  {tech}
+                </Badge>
+              ))}
+            </div>
+
             <p className="border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">
               {project.developmentNote}
             </p>
@@ -99,61 +211,63 @@ const About = () => {
         <Dialog>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {developers.map((developer) => (
-              <Card key={developer.id} 
-              className="
-                relative
-                ring-1 ring-foreground/10
-                transition-all duration-200
-                hover:-translate-y-1
-                hover:shadow-md
-                hover:ring-2
-                hover:ring-[#7A5138]
-                motion-reduce:transform-none
-                motion-reduce:transition-none">
+              <Card
+                key={developer.id}
+                className="group/card relative transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:ring-2 hover:ring-primary/40 motion-reduce:transform-none motion-reduce:transition-none"
+              >
                 <DialogTrigger
-                  className="absolute inset-0 z-10 cursor-pointer rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="absolute inset-0 z-10 cursor-pointer rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   aria-label={`View ${developer.name}'s developer profile`}
                   onClick={() => setSelectedDeveloper(developer)}
                 />
-                <CardContent className="flex flex-col items-center gap-4 py-2 text-center">
-                  <Avatar className="size-20">
+                <CardContent className="flex flex-col items-center gap-3 py-4 text-center">
+                  <Avatar className="size-20 ring-4 ring-secondary transition-transform duration-200 group-hover/card:scale-105 motion-reduce:transform-none motion-reduce:transition-none">
                     {developer.image && (
                       <AvatarImage src={developer.image} alt={`${developer.name}'s profile`} />
                     )}
                     <AvatarFallback className="bg-primary/10 text-primary">
-                      <UserRound
-                        className="size-8"
-                        role="img"
-                        aria-label={`Placeholder profile for ${developer.name}`}
-                      />
+                      <UserRound className="size-8" aria-hidden="true" />
                     </AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">
                     <h3 className="text-base font-semibold">{developer.name}</h3>
                     <p className="text-sm text-muted-foreground">{developer.role}</p>
                   </div>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                    View profile
+                    <ArrowUpRight
+                      className="size-3.5 transition-transform duration-200 group-hover/card:translate-x-0.5 group-hover/card:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+                      aria-hidden="true"
+                    />
+                  </span>
                 </CardContent>
               </Card>
             ))}
           </div>
           <DialogContent
             overlayClassName="bg-black/50 duration-200 motion-reduce:animate-none"
-            className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-border bg-card p-6 text-foreground shadow-xl ring-0 duration-200 sm:max-w-[440px] motion-reduce:animate-none"
+            className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-2xl border border-border bg-card p-0 text-foreground shadow-xl ring-0 duration-200 sm:max-w-[440px] motion-reduce:animate-none"
           >
-            <div className="flex flex-col items-center gap-4 text-center">
-              <Avatar className="size-24">
+            <div className="h-24 bg-gradient-to-br from-primary/25 via-accent/15 to-secondary" aria-hidden="true" />
+            <div className="flex flex-col items-center gap-3 px-6 pb-6 -mt-12 text-center">
+              <Avatar className="size-24 ring-4 ring-card">
                 <AvatarImage src={selectedDeveloper.image} alt={`${selectedDeveloper.name}'s profile`} />
                 <AvatarFallback className="bg-primary/10 text-primary">
                   <UserRound className="size-10" aria-hidden="true" />
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
-                <DialogTitle className="text-xl font-semibold leading-snug">{selectedDeveloper.name}</DialogTitle>
+                <DialogTitle className="text-xl font-semibold leading-snug">
+                  {selectedDeveloper.name}
+                </DialogTitle>
                 <DialogDescription>{selectedDeveloper.role}</DialogDescription>
               </div>
-              <div className="w-full space-y-3 border-t border-border pt-4">
+              <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+                {selectedDeveloper.bio}
+              </p>
+              <div className="mt-2 w-full space-y-3 border-t border-border pt-4">
                 <h3 className="text-sm font-medium">Connect with Developer</h3>
-                <div className="flex justify-center gap-3">
+                <div className="flex flex-wrap justify-center gap-2">
                   {socialPlatforms.map(({ key, label, path }) => {
                     const url = validSocialUrl(selectedDeveloper.socials[key]);
                     return url ? (
@@ -163,11 +277,25 @@ const About = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`${selectedDeveloper.name} on ${label} (opens in a new tab)`}
-                        className={buttonVariants({ variant: "outline", size: "icon-lg", className: "text-primary hover:border-primary/40 hover:bg-primary/10 hover:text-primary" })}
+                        className={buttonVariants({
+                          variant: "outline",
+                          size: "lg",
+                          className: "gap-2 px-3 text-primary hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+                        })}
                       >
-                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          className="size-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d={path} />
                         </svg>
+                        {label}
                       </a>
                     ) : null;
                   })}
@@ -176,6 +304,19 @@ const About = () => {
             </div>
           </DialogContent>
         </Dialog>
+      </section>
+
+      <section className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-secondary/40 p-6 sm:flex-row sm:items-center">
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold tracking-tight">Ready to explore the library?</h2>
+          <p className="text-sm text-muted-foreground">
+            Browse the catalog, check availability, and manage your borrowing.
+          </p>
+        </div>
+        <Link to="/books" className={buttonVariants({ className: "gap-2" })}>
+          Browse catalog
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
       </section>
     </div>
   );

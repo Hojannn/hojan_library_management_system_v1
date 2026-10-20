@@ -13,6 +13,7 @@ import AdminDashboardPage from "./pages/adminPage/AdminDashboardPage"
 import BookDetailsPage from "./pages/usersPage/BookDetailsPage"
 import UsersProfile from "./pages/usersPage/UsersProfile"
 import About from "./pages/About"
+import BorrowRequestsPage from "./pages/adminPage/BorrowRequestsPage"
 
 
 const App = () => {
@@ -41,6 +42,8 @@ const App = () => {
               <Route path="/users/:role" element={<AdminUsersPage />} />
               <Route path="/all-borrows" element={<AdminBorrowsPage />} />
               <Route path="/all-borrows/:status" element={<AdminBorrowsPage />} />
+              <Route path="/borrow-requests" element={<Navigate to="/borrow-requests/pending" replace />} />
+              <Route path="/borrow-requests/:tab" element={<BorrowRequestsPage />} />
               <Route path="/book-list" element={<BooksListPage />} />
             </>
           )}

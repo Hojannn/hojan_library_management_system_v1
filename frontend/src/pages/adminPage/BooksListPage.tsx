@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-spinner";
 import BookFormModal from "@/features/books/components/books/BookFormModal";
 import BooksTable from "@/features/books/components/books/BooksTable";
@@ -6,7 +7,8 @@ import CategoryFilter from "@/features/books/components/categories/CategoryFilte
 import CategoryModal from "@/features/books/components/categories/CategoryModal";
 import { type Book } from "@/features/books/types/book.types";
 import { useBooks, useDeleteBooks } from "@/hooks/useBooks";
-import { AlertCircle, Plus } from "lucide-react";
+import { formatAuthorName } from "@/utils/formatAuthorName";
+import { AlertCircle, Plus, Search, X } from "lucide-react";
 import { useState } from "react"
 
 const BooksListPage = () => {
@@ -17,6 +19,7 @@ const BooksListPage = () => {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleEdit = (book: Book) => {
     setSelectedBook(book);
@@ -33,9 +36,21 @@ const BooksListPage = () => {
     setSelectedBook(null);
   };
 
-  const filteredBooks = selectedCategoryId
-    ? books.filter((book) => book.category_id === selectedCategoryId)
-    : books;
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredBooks = books.filter((book) => {
+    const matchesCategory = selectedCategoryId
+      ? book.category_id === selectedCategoryId
+      : true;
+
+    const matchesSearch = normalizedQuery
+      ? book.title.toLowerCase().includes(normalizedQuery) ||
+        formatAuthorName(book.author).toLowerCase().includes(normalizedQuery) ||
+        (book.isbn ?? "").toLowerCase().includes(normalizedQuery)
+      : true;
+
+    return matchesCategory && matchesSearch;
+  });
 
   if (isLoading) {
     return <LoadingState className="text-primary" containerClassName="h-64" label="Loading books" />;
@@ -70,10 +85,38 @@ const BooksListPage = () => {
         </div>
       </div>
 
-      <CategoryFilter
-        selectedCategoryId={selectedCategoryId}
-        onSelectCategory={setSelectedCategoryId}
-      />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
+          <CategoryFilter
+            selectedCategoryId={selectedCategoryId}
+            onSelectCategory={setSelectedCategoryId}
+          />
+        </div>
+
+        <div className="relative w-full sm:w-72 sm:shrink-0">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search by title, author, or ISBN..."
+            aria-label="Search books"
+            className="h-9 pl-9 pr-9 [&::-webkit-search-cancel-button]:appearance-none"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchQuery("")}
+              aria-label="Clear search"
+              title="Clear search"
+              className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
 
       <BooksTable
         books={filteredBooks}

@@ -103,7 +103,7 @@ def approve_borrow(id):
     try:
         borrow = BorrowService.approve_borrow_request(id)
         return jsonify({
-            "message": "Borrow request approved successfully",
+            "message": "Borrow request approved and reserved for pickup",
             "borrow": borrow.to_dict()
         }), 200
     except ValueError as e:
@@ -117,10 +117,32 @@ def approve_borrow(id):
 @borrows_bp.put("/admin/<uuid:id>/reject-borrow")
 @admin_required()
 def reject_borrow(id):
+    data = request.get_json(silent=True)
+    reason = data.get("reason") if isinstance(data, dict) else None
+    if not isinstance(reason, str) or not reason.strip():
+        return jsonify({"message": "Rejection reason is required"}), 400
+
     try:
-        borrow = BorrowService.reject_borrow_request(id)
+        borrow = BorrowService.reject_borrow_request(id, reason.strip())
         return jsonify({
             "message": "Borrow request rejected",
+            "borrow": borrow.to_dict()
+        }), 200
+    except ValueError as e:
+        status_code = 404 if "not found" in str(e).lower() else 400
+        return jsonify({"message": str(e)}), status_code
+    except Exception:
+        return jsonify({"message": "Something went wrong"}), 500
+
+
+# Confirm that an approved reservation was physically picked up
+@borrows_bp.put("/admin/<uuid:id>/confirm-pickup")
+@admin_required()
+def confirm_pickup(id):
+    try:
+        borrow = BorrowService.confirm_borrow_pickup(id)
+        return jsonify({
+            "message": "Book pickup confirmed and loan started",
             "borrow": borrow.to_dict()
         }), 200
     except ValueError as e:

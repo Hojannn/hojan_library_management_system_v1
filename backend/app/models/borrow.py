@@ -10,6 +10,7 @@ class Borrow(BaseEntity):
 
     # Status Constants
     STATUS_PENDING_BORROW = "PENDING_BORROW"
+    STATUS_READY_FOR_PICKUP = "READY_FOR_PICKUP"
     STATUS_BORROWED = "BORROWED"
     STATUS_PENDING_RETURN = "PENDING_RETURN"
     STATUS_RETURNED = "RETURNED"
@@ -23,6 +24,8 @@ class Borrow(BaseEntity):
     borrowed_at = db.Column(db.DateTime, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)
     returned_at = db.Column(db.DateTime, nullable=True)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    rejection_reason = db.Column(db.Text, nullable=True)
 
     status = db.Column("status", db.String(100), default=STATUS_PENDING_BORROW, nullable=False)
 
@@ -48,6 +51,14 @@ class Borrow(BaseEntity):
         self.returned_at = datetime.now(timezone.utc)
         self.status = self.STATUS_RETURNED
 
+    @staticmethod
+    def _isoformat_utc(value: datetime | None) -> str | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc).isoformat()
+
     def to_dict(self) -> BorrowDict:
         return {
             "id": str(self.id) if self.id else None,
@@ -58,10 +69,13 @@ class Borrow(BaseEntity):
             "book_title": self.book.title if getattr(self, "book", None) and getattr(self.book, "title", None) else "Unknown",
             "book_image": self.book.image_url if getattr(self, "book", None) else None,
             "author": self.book.author if getattr(self, "book", None) else None,
-            "borrowed_at": self.borrowed_at.isoformat() if self.borrowed_at else None,
-            "due_date": self.due_date.isoformat() if self.due_date else None,
+            "book_available_copies": self.book.available_copies if getattr(self, "book", None) else None,
+            "borrowed_at": self._isoformat_utc(self.borrowed_at),
+            "due_date": self._isoformat_utc(self.due_date),
+            "approved_at": self._isoformat_utc(self.approved_at),
+            "rejection_reason": self.rejection_reason,
             "status": self.STATUS_OVERDUE if self.is_overdue() else self.status,
             "is_overdue": self.is_overdue(),
-            "returned_at": self.returned_at.isoformat() if self.returned_at else None,
-            "created_at": self.created_at.isoformat() if self.created_at else None
+            "returned_at": self._isoformat_utc(self.returned_at),
+            "created_at": self._isoformat_utc(self.created_at)
         }

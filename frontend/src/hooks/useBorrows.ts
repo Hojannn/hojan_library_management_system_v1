@@ -1,6 +1,7 @@
 import {
   approveBorrow,
   approveReturn,
+  confirmPickup,
   createBorrow,
   getAllBorrows,
   getBorrowHistory,
@@ -99,15 +100,33 @@ export const useRejectBorrow = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (borrowId: string) => rejectBorrow(borrowId),
+    mutationFn: ({ borrowId, reason }: { borrowId: string; reason: string }) =>
+      rejectBorrow(borrowId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["borrows"] });
+      queryClient.invalidateQueries({ queryKey: ["books"] });
       toast.success("Borrow request rejected.");
     },
     onError: (error: AxiosError<{ message: string }>) => {
       const errorMessage =
         error.response?.data?.message || "Failed to reject borrow request.";
       toast.error(errorMessage);
+    },
+  });
+};
+
+export const useConfirmBorrowPickup = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (borrowId: string) => confirmPickup(borrowId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["borrows"] });
+      queryClient.invalidateQueries({ queryKey: ["books"] });
+      toast.success("Pickup confirmed. The 14-day loan has started.");
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to confirm book pickup.");
     },
   });
 };

@@ -33,8 +33,13 @@ export const approveBorrow = async (borrowId: string): Promise<Borrow> => {
 };
 
 
-export const rejectBorrow = async (borrowId: string): Promise<Borrow> => {
-  const { data } = await api.put(`/borrows/admin/${borrowId}/reject-borrow`);
+export const rejectBorrow = async (borrowId: string, reason: string): Promise<Borrow> => {
+  const { data } = await api.put(`/borrows/admin/${borrowId}/reject-borrow`, { reason });
+  return data.borrow || data;
+};
+
+export const confirmPickup = async (borrowId: string): Promise<Borrow> => {
+  const { data } = await api.put(`/borrows/admin/${borrowId}/confirm-pickup`);
   return data.borrow || data;
 };
 

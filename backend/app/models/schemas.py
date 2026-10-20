@@ -59,6 +59,7 @@ class ReviewDict(TypedDict):
 
 BorrowStatus = Literal[
   "PENDING_BORROW",
+  "READY_FOR_PICKUP",
   "BORROWED",
   "PENDING_RETURN",
   "RETURNED",
@@ -76,8 +77,11 @@ class BorrowDict(TypedDict):
   book_title: str
   book_image: str | None
   author: str | None
+  book_available_copies: int | None
   borrowed_at: str | None
   due_date: str | None
+  approved_at: str | None
+  rejection_reason: str | None
   status: BorrowStatus
   is_overdue: bool
   returned_at: str | None
