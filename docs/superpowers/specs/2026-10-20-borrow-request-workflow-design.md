@@ -77,6 +77,7 @@ The screen follows the Figma composition:
 - Workspace breadcrumb, current date, title, and explanatory copy.
 - Three summary cards: Pending requests, For pickup, and Picked up today.
 - A glass workspace card containing state tabs, search, date/order controls, responsive table, status badges, and pagination.
+- The Request Date table column displays the calendar date only; it does not display a time. Exact timestamps remain available in the request-detail timeline.
 - Book cover imagery uses `book_image` when present and a styled fallback otherwise.
 - Empty, loading, API-error, and mutation-in-progress states remain accessible and visible.
 
