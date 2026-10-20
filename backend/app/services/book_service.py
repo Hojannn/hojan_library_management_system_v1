@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from app.models import Book, Review, Category, Borrow
 from app.utils.cloudinary import upload_book_cover
 from app.extensions import db
@@ -82,6 +84,24 @@ class BookService:
         return query.paginate(page=page, per_page=limit, error_out=False)
 
     @staticmethod
+    def get_staff_catalog(state="active"):
+        if state not in {"active", "archived"}:
+            raise ValueError("Invalid catalog state")
+
+        query = Book.query.options(
+            joinedload(Book.category),
+            joinedload(Book.reviews),
+        )
+        if state == "active":
+            return query.filter(Book.is_deleted == False).order_by(
+                Book.created_at.desc(), Book.id.desc()
+            ).all()
+
+        return query.filter(Book.is_deleted == True).order_by(
+            Book.archived_at.desc(), Book.id.desc()
+        ).all()
+
+    @staticmethod
     def create_book(form_data, image_file=None):
         title = form_data.get("title")
         author = form_data.get("author")
@@ -143,30 +163,60 @@ class BookService:
         return book
 
     @staticmethod
+    def archive_book(book_id):
+        try:
+            book = Book.query.filter_by(id=book_id, is_deleted=False).with_for_update().first()
+            if not book:
+                raise LookupError("Book not found")
+
+            blocking_statuses = [
+                Borrow.STATUS_PENDING_BORROW,
+                Borrow.STATUS_READY_FOR_PICKUP,
+                Borrow.STATUS_BORROWED,
+                Borrow.STATUS_OVERDUE,
+                Borrow.STATUS_PENDING_RETURN,
+            ]
+            active_borrow = Borrow.query.filter_by(book_id=book_id).filter(
+                Borrow.status.in_(blocking_statuses)
+            ).first()
+            if active_borrow:
+                raise ValueError("Cannot archive book with active circulation")
+
+            book.is_deleted = True
+            book.archived_at = datetime.now(timezone.utc)
+            db.session.commit()
+            db.session.refresh(book)
+            return book
+        except Exception:
+            db.session.rollback()
+            raise
+
+    @staticmethod
     def delete_book(book_id):
-        book = db.session.get(Book, book_id)
-        if not book or book.is_deleted:
-            return False, "Book not found"
-
-        active_borrow = Borrow.query.filter_by(book_id=book_id).filter(
-            Borrow.status.in_([Borrow.STATUS_PENDING_BORROW, Borrow.STATUS_BORROWED, Borrow.STATUS_PENDING_RETURN])
-        ).first()
-        if active_borrow:
-            return False, "Cannot delete book, currently borrowed"
-
-        book.is_deleted = True
-        db.session.commit()
-        return True, "Book deleted successfully"
+        """Compatibility wrapper for callers using the previous service name."""
+        try:
+            BookService.archive_book(book_id)
+            return True, "Book archived successfully"
+        except LookupError as error:
+            return False, str(error)
+        except ValueError as error:
+            return False, str(error)
 
     @staticmethod
     def restore_book(book_id):
-        book = db.session.get(Book, book_id)
-        if not book or not book.is_deleted:
-            return None
+        try:
+            book = Book.query.filter_by(id=book_id, is_deleted=True).with_for_update().first()
+            if not book:
+                raise LookupError("Book not found")
 
-        book.is_deleted = False
-        db.session.commit()
-        return book
+            book.is_deleted = False
+            book.archived_at = None
+            db.session.commit()
+            db.session.refresh(book)
+            return book
+        except Exception:
+            db.session.rollback()
+            raise
 
     @staticmethod
     def get_related_books(book_id, limit = 5):
