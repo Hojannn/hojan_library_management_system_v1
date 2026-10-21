@@ -1,6 +1,6 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Book } from "@/features/books/types/book.types";
 import BooksListPage from "./BooksListPage";
@@ -37,7 +37,11 @@ vi.mock("@/features/books/components/categories/CategoryModal", () => ({
   default: () => null,
 }));
 
-const renderPage = () => render(<MemoryRouter><BooksListPage /></MemoryRouter>);
+const LocationProbe = () => {
+  const location = useLocation();
+  return <output aria-label="Current location">{`${location.pathname}${location.search}`}</output>;
+};
+const renderPage = (initialEntry = "/book-list") => render(<MemoryRouter initialEntries={[initialEntry]}><BooksListPage /><LocationProbe /></MemoryRouter>);
 
 describe("BooksListPage", () => {
   beforeEach(() => {
@@ -118,5 +122,19 @@ describe("BooksListPage", () => {
     await user.click(within(row!).getByRole("button", { name: "Archive Clean Code" }));
     expect(screen.getByRole("heading", { name: "Circulation unavailable" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Archive book" })).not.toBeInTheDocument();
+  });
+
+  it("opens a linked staff book detail and clears the query when closed", async () => {
+    const user = userEvent.setup();
+    renderPage("/book-list?book=book-1");
+    expect(await screen.findByRole("dialog", { name: "Book details" })).toHaveTextContent("Clean Code");
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    expect(screen.getByLabelText("Current location")).toHaveTextContent("/book-list");
+    expect(screen.getByLabelText("Current location")).not.toHaveTextContent("?book=");
+  });
+
+  it("ignores an unknown linked book id", () => {
+    renderPage("/book-list?book=missing-book");
+    expect(screen.queryByRole("dialog", { name: "Book details" })).not.toBeInTheDocument();
   });
 });

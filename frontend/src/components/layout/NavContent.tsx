@@ -82,7 +82,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
         },
         { label: "Loans & Returns", path: "/all-borrows/active", icon: RotateCcw },
         { label: "Books List", path: "/book-list", icon: BookOpen },
-        { label: "Categories", path: "/book-list", icon: Layers3 },
+        { label: "Categories", path: "/categories", icon: Layers3 },
       ];
 
       if (isAdmin) {

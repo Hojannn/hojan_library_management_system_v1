@@ -15,15 +15,16 @@ import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 interface CategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialCategory?: Category | null;
 }
 
-const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
+const CategoryModal = ({ isOpen, onClose, initialCategory = null }: CategoryModalProps) => {
   const { data: categories, isLoading } = useCategories();
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
 
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(initialCategory);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
   const {
@@ -33,7 +34,8 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
     setValue,
     formState: { errors },
   } = useForm<CategoryFormData>({
-    resolver: zodResolver(categorySchema)
+    resolver: zodResolver(categorySchema),
+    defaultValues: { name: initialCategory?.name ?? "" },
   });
 
   const onSubmit = (data: CategoryFormData) => {

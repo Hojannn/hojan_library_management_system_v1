@@ -12,6 +12,11 @@ export const useCategories = () => {
   });
 }
 
+const invalidateCategoryWorkspace = (queryClient: ReturnType<typeof useQueryClient>) => {
+  queryClient.invalidateQueries({ queryKey: ["categories"] });
+  queryClient.invalidateQueries({ queryKey: ["books"] });
+};
+
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
@@ -20,9 +25,7 @@ export const useCreateCategory = () => {
       createCategory(data),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['categories']
-      });
+      invalidateCategoryWorkspace(queryClient);
       toast.success("Category created successfully");
     },
 
@@ -40,9 +43,7 @@ export const useUpdateCategory = () => {
       updateCategory(id, data),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['categories']
-      });
+      invalidateCategoryWorkspace(queryClient);
       toast.success("Category updated successfully");
     },
 
@@ -58,9 +59,7 @@ export const useDeleteCategory = () => {
   return useMutation({
     mutationFn: (id: string) => deleteCategory(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['categories']
-      });
+      invalidateCategoryWorkspace(queryClient);
       toast.success("Category deleted successfully");
     },
 

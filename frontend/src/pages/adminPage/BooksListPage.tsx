@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { AlertCircle, ChevronLeft, ChevronRight, FolderCog, Plus, Search } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,6 @@ import BookDetailsDialog from "@/features/books/components/books/BookDetailsDial
 import BookFormModal from "@/features/books/components/books/BookFormModal";
 import BookRestoreDialog from "@/features/books/components/books/BookRestoreDialog";
 import BooksTable from "@/features/books/components/books/BooksTable";
-import CategoryModal from "@/features/books/components/categories/CategoryModal";
 import { filterAndSortBooks, getBookCirculation, getBookSummary } from "@/features/books/lib/bookListView";
 import type { Book, StaffBookState } from "@/features/books/types/book.types";
 import { useAdminBorrows } from "@/hooks/useBorrows";
@@ -21,6 +21,8 @@ const EMPTY_BOOKS: Book[] = [];
 
 const BooksListPage = () => {
   const activeQuery = useStaffBooks("active");
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const archivedQuery = useStaffBooks("archived");
   const borrowQuery = useAdminBorrows();
   const archiveMutation = useArchiveBook();
@@ -33,10 +35,9 @@ const BooksListPage = () => {
   const [sort, setSort] = useState<"recent" | "title" | "availability" | "archived">("recent");
   const [page, setPage] = useState(1);
   const [formBook, setFormBook] = useState<Book | null | undefined>(undefined);
-  const [detailsBook, setDetailsBook] = useState<Book | null>(null);
+  const [manualDetailsBook, setManualDetailsBook] = useState<Book | null>(null);
   const [archiveBook, setArchiveBook] = useState<Book | null>(null);
   const [restoreBook, setRestoreBook] = useState<Book | null>(null);
-  const [categoryOpen, setCategoryOpen] = useState(false);
 
   const activeBooks = activeQuery.data ?? EMPTY_BOOKS;
   const archivedBooks = archivedQuery.data ?? EMPTY_BOOKS;
@@ -49,10 +50,21 @@ const BooksListPage = () => {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const linkedBookId = searchParams.get("book");
+  const linkedBook = linkedBookId ? activeBooks.find((book) => book.id === linkedBookId) ?? null : null;
+  const detailsBook = manualDetailsBook ?? linkedBook;
 
   const switchState = (next: StaffBookState) => { setState(next); setPage(1); setSearch(""); setCategory("all"); setAvailability("all"); setArchiveDate(""); setSort(next === "active" ? "recent" : "archived"); };
-  const startEdit = (book: Book) => { setDetailsBook(null); setFormBook(book); };
-  const startArchive = (book: Book) => { setDetailsBook(null); setArchiveBook(book); };
+  const closeDetails = () => {
+    setManualDetailsBook(null);
+    if (searchParams.has("book")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("book");
+      setSearchParams(next, { replace: true });
+    }
+  };
+  const startEdit = (book: Book) => { closeDetails(); setFormBook(book); };
+  const startArchive = (book: Book) => { closeDetails(); setArchiveBook(book); };
   const startRestore = (book: Book) => setRestoreBook(book);
   const confirmArchive = (book: Book) => archiveMutation.mutate(book.id, { onSuccess: () => setArchiveBook(null) });
   const confirmRestore = (book: Book) => restoreMutation.mutate(book.id, { onSuccess: () => setRestoreBook(null) });
@@ -65,7 +77,7 @@ const BooksListPage = () => {
   ];
 
   return <div className="mx-auto min-h-[calc(100vh-4rem)] max-w-[1180px] space-y-6 pb-4">
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="booky-eyebrow">Workspace / Library catalog</p><h1 className="booky-heading mt-3 text-3xl">Books List</h1><p className="mt-2 text-sm text-muted-foreground">Manage titles, inventory, and archived records.</p></div><div className="flex flex-col items-start gap-3 sm:items-end"><time className="text-xs text-muted-foreground">{new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "2-digit", year: "numeric" }).format(new Date())}</time><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setCategoryOpen(true)}><FolderCog /> Categories</Button><Button onClick={() => setFormBook(null)}><Plus /> Add book</Button></div></div></header>
+    <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="booky-eyebrow">Workspace / Library catalog</p><h1 className="booky-heading mt-3 text-3xl">Books List</h1><p className="mt-2 text-sm text-muted-foreground">Manage titles, inventory, and archived records.</p></div><div className="flex flex-col items-start gap-3 sm:items-end"><time className="text-xs text-muted-foreground">{new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "2-digit", year: "numeric" }).format(new Date())}</time><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => navigate("/categories")}><FolderCog /> Categories</Button><Button onClick={() => setFormBook(null)}><Plus /> Add book</Button></div></div></header>
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Catalog summary">{cards.map(([label, value, hint, testId], index) => <article key={label} className={cn("min-h-28 rounded-2xl border border-white/55 bg-card p-5", index === 0 && "bg-primary/90")}><p className="text-xs font-bold text-muted-foreground">{label}</p><strong data-testid={testId} className="mt-1 block text-3xl text-heading">{value}</strong><p className="mt-1 text-[11px] text-muted-foreground">{hint}</p></article>)}</section>
     <section className="booky-glass min-h-[570px] p-4 sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-2"><button type="button" onClick={() => switchState("active")} className={cn("min-w-32 rounded-lg bg-muted px-4 py-3 text-[11px] font-bold text-muted-foreground", state === "active" && "rounded-full bg-primary text-primary-foreground")}>All Books&nbsp; {activeBooks.length}</button><button type="button" onClick={() => switchState("archived")} className={cn("min-w-32 rounded-lg bg-muted px-4 py-3 text-[11px] font-bold text-muted-foreground", state === "archived" && "rounded-full bg-primary text-primary-foreground")}>Archived&nbsp; {archivedBooks.length}</button></div><p className="text-[11px] text-muted-foreground">{filtered.length} {filtered.length === 1 ? "title" : "titles"}</p></div>
@@ -76,15 +88,14 @@ const BooksListPage = () => {
         <select aria-label="Sort books" className="booky-input text-xs font-semibold" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}>{state === "archived" && <option value="archived">Recently archived</option>}<option value="recent">Recently added</option><option value="title">Title A–Z</option>{state === "active" && <option value="availability">Most available</option>}</select>
       </div>
       {selectedQuery.isLoading ? <LoadingState className="text-primary" containerClassName="min-h-72" label={`Loading ${state === "active" ? "active" : "archived"} books`} /> : selectedQuery.isError ? <div className="flex min-h-72 items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive"><AlertCircle className="size-4 shrink-0" />Could not load {state === "active" ? "active" : "archived"} books.</div> : <>
-        <BooksTable books={visible} state={state} onView={setDetailsBook} onEdit={startEdit} onArchive={startArchive} onRestore={startRestore} isProcessing={archiveMutation.isPending || restoreMutation.isPending} />
+        <BooksTable books={visible} state={state} onView={setManualDetailsBook} onEdit={startEdit} onArchive={startArchive} onRestore={startRestore} isProcessing={archiveMutation.isPending || restoreMutation.isPending} />
         {filtered.length > PAGE_SIZE && <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground"><span>Page {currentPage} of {pageCount}</span><div className="flex gap-2"><Button variant="outline" size="sm" aria-label="Previous page" disabled={currentPage <= 1} onClick={() => setPage((value) => value - 1)}><ChevronLeft /></Button><Button variant="outline" size="sm" aria-label="Next page" disabled={currentPage >= pageCount} onClick={() => setPage((value) => value + 1)}><ChevronRight /></Button></div></div>}
       </>}
     </section>
-    <BookDetailsDialog book={detailsBook} borrows={circulationAvailable ? (borrowQuery.data || []) : []} circulationAvailable={circulationAvailable} open={!!detailsBook} onOpenChange={(open) => !open && setDetailsBook(null)} onEdit={startEdit} onArchive={startArchive} />
+    <BookDetailsDialog book={detailsBook} borrows={circulationAvailable ? (borrowQuery.data || []) : []} circulationAvailable={circulationAvailable} open={!!detailsBook} onOpenChange={(open) => !open && closeDetails()} onEdit={startEdit} onArchive={startArchive} />
     <BookFormModal isOpen={formBook !== undefined} onClose={() => setFormBook(undefined)} book={formBook} />
     <BookArchiveDialog open={!!archiveBook} book={archiveBook} circulation={getBookCirculation(archiveBook?.id || "", circulationAvailable ? (borrowQuery.data || []) : [])} circulationAvailable={circulationAvailable} isPending={archiveMutation.isPending} onOpenChange={(open) => !open && setArchiveBook(null)} onConfirm={confirmArchive} />
     <BookRestoreDialog open={!!restoreBook} book={restoreBook} isPending={restoreMutation.isPending} onOpenChange={(open) => !open && setRestoreBook(null)} onConfirm={confirmRestore} />
-    <CategoryModal isOpen={categoryOpen} onClose={() => setCategoryOpen(false)} />
   </div>;
 };
 

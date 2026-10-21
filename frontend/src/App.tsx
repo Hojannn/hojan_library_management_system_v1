@@ -14,6 +14,7 @@ import BookDetailsPage from "./pages/usersPage/BookDetailsPage"
 import UsersProfile from "./pages/usersPage/UsersProfile"
 import About from "./pages/About"
 import BorrowRequestsPage from "./pages/adminPage/BorrowRequestsPage"
+import CategoriesPage from "./pages/adminPage/CategoriesPage"
 
 
 const App = () => {
@@ -45,6 +46,7 @@ const App = () => {
               <Route path="/borrow-requests" element={<Navigate to="/borrow-requests/pending" replace />} />
               <Route path="/borrow-requests/:tab" element={<BorrowRequestsPage />} />
               <Route path="/book-list" element={<BooksListPage />} />
+              <Route path="/categories" element={<CategoriesPage />} />
             </>
           )}
         </Route>

@@ -1,16 +1,14 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from app.models import Category, Book
-from app.extensions import db
 from app.services.category_service import CategoryService
 
-from app.middleware.auth import admin_required
+from app.middleware.auth import administrator_required
 
 category_bp = Blueprint("categories", __name__, url_prefix="/api/categories")
 
 # deleting category 
 @category_bp.delete("/<uuid:id>")
-@admin_required()
+@administrator_required()
 def delete_category(id):
 
   try:
@@ -24,7 +22,7 @@ def delete_category(id):
 
 # updating category
 @category_bp.put("/<uuid:id>")
-@admin_required()
+@administrator_required()
 def update_category(id):
 
   data = request.get_json() or {}
@@ -43,10 +41,10 @@ def update_category(id):
 def get_category():
   categories = CategoryService.get_all_categories()
 
-  return jsonify([cat.to_dict() for cat in categories]), 200
+  return jsonify(categories), 200
 
 @category_bp.post("")
-@jwt_required()
+@administrator_required()
 def create_category():
 
   data = request.get_json() or {}
@@ -59,5 +57,3 @@ def create_category():
     return jsonify({ "message": str(e) }), 400
   except Exception:
     return jsonify({ "message": "Failed to create category" }), 500
-  
-  

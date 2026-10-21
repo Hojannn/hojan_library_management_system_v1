@@ -50,6 +50,7 @@ const invalidateBookCatalogs = (queryClient: ReturnType<typeof useQueryClient>) 
   queryClient.invalidateQueries({ queryKey: ["books", "staff"] });
   queryClient.invalidateQueries({ queryKey: ["books"] });
   queryClient.invalidateQueries({ queryKey: ["book"] });
+  queryClient.invalidateQueries({ queryKey: ["categories"] });
 };
 
 export const useSubmitReview = (bookId: string) => {
@@ -92,9 +93,7 @@ export const useCreateBooks = () => {
   return useMutation({
     mutationFn: createBook,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["books"]
-      });
+      invalidateBookCatalogs(queryClient);
       toast.success("Book added successfully")
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -112,12 +111,7 @@ export const useUpdateBooks = () => {
       data
     } : BookUpdateProps) => updateBook(bookId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["books"]
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["book"]
-      });
+      invalidateBookCatalogs(queryClient);
       toast.success("Book updated successfully")
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -132,9 +126,7 @@ export const useDeleteBooks = () => {
   return useMutation({
     mutationFn: ( bookId: string ) => deleteBook(bookId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["books"]
-      });
+      invalidateBookCatalogs(queryClient);
       toast.success("Book deleted successfully")
     },
     onError: (error: AxiosError<{ message: string }>) => {

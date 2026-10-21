@@ -5,8 +5,20 @@ class CategoryService:
 
   @staticmethod
   def get_all_categories():
-
-    return Category.query.order_by(Category._name.asc()).all()
+    rows = (
+      db.session.query(Category, db.func.count(Book.id))
+      .outerjoin(
+        Book,
+        db.and_(Book.category_id == Category.id, Book.is_deleted.is_(False))
+      )
+      .group_by(Category.id)
+      .order_by(Category._name.asc())
+      .all()
+    )
+    return [
+      {**category.to_dict(), "book_count": int(book_count)}
+      for category, book_count in rows
+    ]
 
   @staticmethod
   def create_category(name):
