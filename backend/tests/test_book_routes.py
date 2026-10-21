@@ -50,6 +50,7 @@ class BookRouteTests(unittest.TestCase):
             "/api/books/admin/catalog", headers=self.headers(self.staff_token)
         )
         self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.get_json(), list)
         catalog.assert_called_once_with("active")
 
         catalog.reset_mock()
@@ -59,7 +60,7 @@ class BookRouteTests(unittest.TestCase):
             headers=self.headers(self.staff_token),
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.get_json()["books"][0]["is_deleted"])
+        self.assertTrue(response.get_json()[0]["is_deleted"])
         catalog.assert_called_once_with("archived")
 
     def test_staff_catalog_requires_staff_role(self):

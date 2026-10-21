@@ -15,7 +15,7 @@ def get_staff_catalog():
   try:
     state = request.args.get("state", "active")
     books = BookService.get_staff_catalog(state)
-    return jsonify({"books": [book.to_dict() for book in books]}), 200
+    return jsonify([book.to_dict() for book in books]), 200
   except ValueError as e:
     return jsonify({"message": str(e)}), 400
 

@@ -40,10 +40,10 @@ export const getBooks = async(categoryId?: string): Promise<Book[]> => {
 };
 
 export const getStaffBooks = async(state: StaffBookState): Promise<Book[]> => {
-  const { data } = await api.get<{ books: Book[] }>("/books/admin/catalog", {
+  const { data } = await api.get<Book[]>("/books/admin/catalog", {
     params: { state },
   });
-  return data.books;
+  return data;
 };
 
 export const getBookById = async(bookId: string): Promise<Book> => {

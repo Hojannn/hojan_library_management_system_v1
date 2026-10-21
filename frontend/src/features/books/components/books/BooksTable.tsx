@@ -28,8 +28,7 @@ const BooksTable = ({ books, state, onView, onEdit, onArchive, onRestore, isProc
       <Table className="min-w-[900px]">
         <TableHeader><TableRow>
           <TableHead>Book</TableHead><TableHead>ISBN</TableHead><TableHead>Category</TableHead>
-          <TableHead>Availability</TableHead><TableHead>Total</TableHead>
-          {state === "archived" && <TableHead>Archived</TableHead>}
+          {state === "active" ? <><TableHead>Availability</TableHead><TableHead>Total</TableHead></> : <><TableHead>Archived</TableHead><TableHead>Status</TableHead></>}
           <TableHead className="text-right">Actions</TableHead>
         </TableRow></TableHeader>
         <TableBody>{books.map((book) => (
@@ -42,9 +41,7 @@ const BooksTable = ({ books, state, onView, onEdit, onArchive, onRestore, isProc
             </div></TableCell>
             <TableCell className="text-xs text-muted-foreground">{book.isbn || "—"}</TableCell>
             <TableCell><span className="booky-badge">{book.category_name || "Uncategorized"}</span></TableCell>
-            <TableCell><span className={book.available_copies > 0 ? "booky-badge booky-badge-success" : "booky-badge booky-badge-danger"}>{book.available_copies > 0 ? `${book.available_copies} available` : "Unavailable"}</span></TableCell>
-            <TableCell className="text-xs font-semibold">{book.total_copies}</TableCell>
-            {state === "archived" && <TableCell className="text-xs text-muted-foreground">{formatBookDate(book.archived_at)}</TableCell>}
+            {state === "active" ? <><TableCell><span className={book.available_copies > 0 ? "booky-badge booky-badge-success" : "booky-badge booky-badge-danger"}>{book.available_copies > 0 ? `${book.available_copies} available` : "Unavailable"}</span></TableCell><TableCell className="text-xs font-semibold">{book.total_copies}</TableCell></> : <><TableCell className="text-xs text-muted-foreground">{formatBookDate(book.archived_at)}</TableCell><TableCell><span className="booky-badge">Archived</span></TableCell></>}
             <TableCell><div className="flex justify-end gap-1">
               <Button variant="ghost" size="icon-sm" onClick={() => onView(book)} aria-label={`View ${book.title}`}><Eye /></Button>
               {state === "active" ? <>

@@ -34,7 +34,7 @@ describe("staff books data layer", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("requests each staff catalog state", async () => {
-    vi.mocked(api.get).mockResolvedValue({ data: { books: [book] } });
+    vi.mocked(api.get).mockResolvedValue({ data: [book] });
     await expect(getStaffBooks("active")).resolves.toEqual([book]);
     await expect(getStaffBooks("archived")).resolves.toEqual([book]);
     expect(api.get).toHaveBeenNthCalledWith(1, "/books/admin/catalog", {
@@ -46,7 +46,7 @@ describe("staff books data layer", () => {
   });
 
   it("uses the state in the staff query key", async () => {
-    vi.mocked(api.get).mockResolvedValue({ data: { books: [book] } });
+    vi.mocked(api.get).mockResolvedValue({ data: [book] });
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const { result } = renderHook(() => useStaffBooks("archived"), {
       wrapper: wrapper(client),

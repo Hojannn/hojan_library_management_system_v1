@@ -29,6 +29,18 @@ class BookServiceTestCase(unittest.TestCase):
 
 
 class BookCatalogServiceTests(BookServiceTestCase):
+    def test_public_catalog_excludes_archived_books(self):
+        active = Book("Active", "Author")
+        archived = Book("Archived", "Author")
+        archived.is_deleted = True
+        archived.archived_at = datetime.now(timezone.utc)
+        db.session.add_all([active, archived])
+        db.session.commit()
+
+        result = BookService.get_paginated_books(limit=10)
+
+        self.assertEqual([book.title for book in result.items], ["Active"])
+
     def test_catalog_filters_and_orders_each_state(self):
         older = Book("Older", "Author")
         newer = Book("Newer", "Author")

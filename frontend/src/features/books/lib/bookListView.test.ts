@@ -35,6 +35,7 @@ describe("book list view model", () => {
     expect(filterAndSortBooks(books, { search: "dune", category: "c2" }).map((book) => book.id)).toEqual(["2"]);
     expect(filterAndSortBooks(books, { availability: "unavailable" }).map((book) => book.id)).toEqual(["2"]);
     expect(filterAndSortBooks(books, { archiveDate: "2026-10-20" }).map((book) => book.id)).toEqual(["2"]);
+    expect(() => filterAndSortBooks([{ ...books[0], isbn: null, category_id: null, category_name: null, image_url: null, pages: null, created_at: null }], { search: "clean" })).not.toThrow();
   });
 
   it("sorts without mutating input", () => {

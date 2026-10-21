@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Book } from "../../types/book.types";
 import BookArchiveDialog from "./BookArchiveDialog";
@@ -18,6 +18,11 @@ vi.mock("@/hooks/useCategories", () => ({ useCategories: () => ({ data: [], isLo
 const book: Book = { id: "book-1", title: "Clean Code", author: "Robert C. Martin", category_id: "", total_copies: 3, available_copies: 2, image_url: "", pages: 464 };
 
 describe("book management workflow", () => {
+  afterEach(() => {
+    cleanup();
+    mocks.create.mockReset();
+    mocks.update.mockReset();
+  });
   it("opens the add drawer and validates required fields", async () => {
     const user = userEvent.setup();
     render(<BookFormModal isOpen onClose={vi.fn()} book={null} />);
@@ -28,14 +33,24 @@ describe("book management workflow", () => {
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
+  it("opens a populated edit drawer and submits through the update contract", async () => {
+    const user = userEvent.setup();
+    render(<BookFormModal isOpen onClose={vi.fn()} book={book} />);
+    expect(screen.getByRole("dialog", { name: "Edit book" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Title/)).toHaveValue("Clean Code");
+    await user.click(screen.getByRole("button", { name: "Update book" }));
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ bookId: "book-1" }), expect.any(Object));
+    expect(screen.getByRole("dialog", { name: "Edit book" })).toBeInTheDocument();
+  });
+
   it("shows eligible and blocked archive states", async () => {
     const user = userEvent.setup();
     const confirm = vi.fn();
-    const { rerender } = render(<MemoryRouter><BookArchiveDialog open book={book} circulation={{ onLoan: 0, reserved: 0, records: [], hasBlocking: false, blockingKind: null }} isPending={false} onOpenChange={vi.fn()} onConfirm={confirm} /></MemoryRouter>);
+    const { rerender } = render(<MemoryRouter><BookArchiveDialog open book={book} circulation={{ onLoan: 0, reserved: 0, records: [], hasBlocking: false, blockingKind: null }} circulationAvailable isPending={false} onOpenChange={vi.fn()} onConfirm={confirm} /></MemoryRouter>);
     await user.click(screen.getByRole("button", { name: "Archive book" }));
     expect(confirm).toHaveBeenCalledWith(book);
 
-    rerender(<MemoryRouter><BookArchiveDialog open book={book} circulation={{ onLoan: 0, reserved: 1, records: [], hasBlocking: true, blockingKind: "request" }} isPending={false} onOpenChange={vi.fn()} onConfirm={confirm} /></MemoryRouter>);
+    rerender(<MemoryRouter><BookArchiveDialog open book={book} circulation={{ onLoan: 0, reserved: 1, records: [], hasBlocking: true, blockingKind: "request" }} circulationAvailable isPending={false} onOpenChange={vi.fn()} onConfirm={confirm} /></MemoryRouter>);
     expect(screen.getByRole("heading", { name: "Book cannot be archived" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Review borrow requests" })).toHaveAttribute("href", "/borrow-requests/pending");
   });
@@ -48,5 +63,14 @@ describe("book management workflow", () => {
     expect(button).toBeDisabled();
     await user.click(button);
     expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it("submits a restore once when available", async () => {
+    const confirm = vi.fn();
+    const user = userEvent.setup();
+    render(<BookRestoreDialog open book={book} isPending={false} onOpenChange={vi.fn()} onConfirm={confirm} />);
+    await user.click(screen.getByRole("button", { name: "Restore book" }));
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(confirm).toHaveBeenCalledWith(book);
   });
 });
