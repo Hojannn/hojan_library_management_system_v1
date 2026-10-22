@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
     email: "admin@booky.test",
     avatar_url: "https://cdn.example.com/avatar.png",
     role: "admin" as const,
-    is_google_account: false,
+    is_google_account: false as boolean,
   },
 }));
 
@@ -32,6 +32,7 @@ describe("StaffSettings", () => {
     mocks.passwordMutate.mockReset();
     localStorage.clear();
     document.documentElement.classList.remove("dark");
+    mocks.user.is_google_account = false;
   });
 
   it("renders the Figma settings cards and saves a trimmed display name", async () => {
@@ -98,5 +99,13 @@ describe("StaffSettings", () => {
       target: { files: [new File(["gif"], "avatar.gif", { type: "image/gif" })] },
     });
     expect(screen.getByText(/JPEG, PNG, or WebP/)).toBeInTheDocument();
+  });
+
+  it("shows provider-managed security without password inputs for Google accounts", () => {
+    mocks.user.is_google_account = true;
+    render(<StaffSettings />);
+
+    expect(screen.getByText("Password managed by Google")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Current password")).not.toBeInTheDocument();
   });
 });
