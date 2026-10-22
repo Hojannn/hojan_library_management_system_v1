@@ -19,9 +19,16 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { EditProfileModal } from "@/features/auth/components/EditProfileModal";
 import { useBorrowHistory, useBorrows } from "@/hooks/useBorrows";
+import { StaffSettings } from "@/features/settings/components/StaffSettings";
 
+export default function UsersProfile() {
+  const { user } = useAuth();
 
-export default function StudentProfile() {
+  if (!user) return null;
+  return user.role === "student" ? <StudentProfile /> : <StaffSettings />;
+}
+
+function StudentProfile() {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLibraryCardOpen, setIsLibraryCardOpen] = useState(false);

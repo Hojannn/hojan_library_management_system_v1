@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { validatePasswordChange, validateProfilePhoto } from "./settingsForm";
+import { validateDisplayName, validatePasswordChange, validateProfilePhoto } from "./settingsForm";
 
 describe("settings form validation", () => {
   it("accepts supported profile photos up to 2 MB", () => {
@@ -22,5 +22,10 @@ describe("settings form validation", () => {
     expect(validatePasswordChange("current-pass", "new-password", "different")).toMatchObject({ confirmPassword: expect.any(String) });
     expect(validatePasswordChange("same-password", "same-password", "same-password")).toMatchObject({ newPassword: expect.any(String) });
     expect(validatePasswordChange("current-pass", "new-password", "new-password")).toEqual({});
+  });
+
+  it("rejects a whitespace-only display name", () => {
+    expect(validateDisplayName("   ")).toBe("Display name is required.");
+    expect(validateDisplayName("Library Admin")).toBeNull();
   });
 });

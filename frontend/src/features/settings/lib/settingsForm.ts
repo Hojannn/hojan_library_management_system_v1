@@ -3,6 +3,10 @@ const SUPPORTED_PROFILE_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image
 
 export type PasswordErrors = Partial<Record<"currentPassword" | "newPassword" | "confirmPassword", string>>;
 
+export function validateDisplayName(value: string): string | null {
+  return value.trim() ? null : "Display name is required.";
+}
+
 export function validateProfilePhoto(file: File): string | null {
   if (!SUPPORTED_PROFILE_PHOTO_TYPES.has(file.type)) {
     return "Choose a JPEG, PNG, or WebP image.";
