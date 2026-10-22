@@ -9,6 +9,26 @@ from flask_jwt_extended import create_access_token
 class AuthService:
 
   @staticmethod
+  def change_password(user_id, current_password, new_password):
+    user = db.session.get(User, user_id)
+
+    if not user:
+      raise ValueError("User not found")
+    if user.google_id or not user._password_hash:
+      raise ValueError("Password security for this account is managed by Google")
+    if not user.check_password(current_password):
+      raise ValueError("Current password is incorrect")
+    if user.check_password(new_password):
+      raise ValueError("New password must be different from the current password")
+
+    try:
+      user.password = new_password
+      db.session.commit()
+    except Exception:
+      db.session.rollback()
+      raise
+
+  @staticmethod
   def _available_google_username(preferred_username):
     base_username = preferred_username.strip()[:90] or "google_user"
     candidate = base_username

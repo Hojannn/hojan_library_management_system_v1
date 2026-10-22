@@ -1,11 +1,40 @@
+from uuid import UUID
+
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.middleware.auth import admin_required
 from app.models import User, Student
 from app.extensions import db
+from app.services.auth_service import AuthService
 from app.utils.cloudinary import upload_avatar, delete_avatar
 
 users_bp = Blueprint("users", __name__, url_prefix="/api/users")
+
+
+@users_bp.put("/me/password")
+@jwt_required()
+def change_current_user_password():
+  data = request.get_json() or {}
+  current_password = data.get("current_password", "")
+  new_password = data.get("new_password", "")
+  confirm_password = data.get("confirm_password", "")
+
+  if not all(isinstance(value, str) and value for value in [current_password, new_password, confirm_password]):
+    return jsonify({"message": "All password fields are required"}), 400
+  if len(new_password) < 8:
+    return jsonify({"message": "New password must be at least 8 characters"}), 400
+  if new_password != confirm_password:
+    return jsonify({"message": "New password and confirmation do not match"}), 400
+  if new_password == current_password:
+    return jsonify({"message": "New password must be different from the current password"}), 400
+
+  try:
+    AuthService.change_password(
+      UUID(str(get_jwt_identity())), current_password, new_password
+    )
+    return jsonify({"message": "Password updated successfully"}), 200
+  except ValueError as error:
+    return jsonify({"message": str(error)}), 400
 
 # update current logged in user profile
 @users_bp.put("/me")
