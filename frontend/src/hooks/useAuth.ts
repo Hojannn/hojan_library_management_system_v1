@@ -1,5 +1,5 @@
 import { AuthContext } from "@/context/auth-context"
-import { getAllUsers, updateUserActiveStatus, updateUserProfile, updateUserRole} from "@/features/auth";
+import { changePassword, getAllUsers, updateUserActiveStatus, updateUserProfile, updateUserRole} from "@/features/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react"
 import { AxiosError } from "axios";
@@ -75,6 +75,18 @@ export const useUpdateUserProfile = () => {
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data?.message || "Failed to update profile");
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: changePassword,
+    onSuccess: (data) => {
+      toast.success(data.message || "Password updated successfully");
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to update password");
     },
   });
 };

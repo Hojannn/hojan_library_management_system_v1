@@ -15,12 +15,23 @@ export interface UpdateProfilePayload {
   };
 }
 
+export interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
 export const updateUserProfile = async (formData: FormData) => {
   const { data } = await api.put("/users/me", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
   });
+  return data;
+};
+
+export const changePassword = async (payload: ChangePasswordPayload) => {
+  const { data } = await api.put<{ message: string }>("/users/me/password", payload);
   return data;
 };
 
