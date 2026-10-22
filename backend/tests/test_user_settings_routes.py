@@ -1,5 +1,6 @@
 import unittest
 import uuid
+from io import BytesIO
 from unittest.mock import MagicMock, patch
 
 from flask import Flask
@@ -91,6 +92,68 @@ class PasswordRouteTests(unittest.TestCase):
                 )
                 self.assertEqual(response.status_code, 400)
                 self.assertIn(message, response.get_json()["message"])
+
+
+class ProfileAvatarRouteTests(unittest.TestCase):
+    def setUp(self):
+        self.app = Flask(__name__)
+        self.app.config.update(TESTING=True, JWT_SECRET_KEY="test-secret")
+        JWTManager(self.app)
+        self.app.register_blueprint(users_bp)
+        with self.app.app_context():
+            self.user_id = uuid.uuid4()
+            self.token = create_access_token(identity=str(self.user_id))
+        self.client = self.app.test_client()
+
+    @property
+    def headers(self):
+        return {"Authorization": f"Bearer {self.token}"}
+
+    @patch("app.blueprints.users.routes.delete_avatar")
+    @patch("app.blueprints.users.routes.db")
+    @patch("app.blueprints.users.routes.User")
+    def test_remove_avatar_clears_url_after_commit(self, user_model, mock_db, delete_avatar):
+        user = MagicMock(role="admin", avatar_url="https://cdn.example.com/old.png")
+        user.to_dict.return_value = {"avatar_url": None}
+        user_model.query.get_or_404.return_value = user
+
+        response = self.client.put(
+            "/api/users/me",
+            data={"remove_avatar": "true"},
+            headers=self.headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(user.avatar_url)
+        mock_db.session.commit.assert_called_once_with()
+        delete_avatar.assert_called_once_with("https://cdn.example.com/old.png")
+
+    @patch("app.blueprints.users.routes.upload_avatar", return_value="https://cdn.example.com/new.png")
+    @patch("app.blueprints.users.routes.delete_avatar")
+    @patch("app.blueprints.users.routes.db")
+    @patch("app.blueprints.users.routes.User")
+    def test_uploaded_avatar_wins_over_remove_flag(
+        self, user_model, mock_db, delete_avatar, upload_avatar
+    ):
+        user = MagicMock(role="admin", avatar_url="https://cdn.example.com/old.png")
+        user.to_dict.return_value = {"avatar_url": "https://cdn.example.com/new.png"}
+        user_model.query.get_or_404.return_value = user
+
+        response = self.client.put(
+            "/api/users/me",
+            data={
+                "remove_avatar": "true",
+                "avatar": (BytesIO(b"image"), "avatar.png", "image/png"),
+            },
+            headers=self.headers,
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(user.avatar_url, "https://cdn.example.com/new.png")
+        upload_avatar.assert_called_once()
+        mock_db.session.commit.assert_called_once_with()
+        delete_avatar.assert_called_once_with("https://cdn.example.com/old.png")
 
 
 if __name__ == "__main__":

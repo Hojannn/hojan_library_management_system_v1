@@ -44,6 +44,7 @@ def update_current_user():
   user = User.query.get_or_404(user_id)
   data = request.form
   avatar_file = request.files.get("avatar")
+  remove_avatar = data.get("remove_avatar", "").strip().lower() in {"1", "true", "yes"}
   old_avatar_url = None
 
   if "username" in data:
@@ -122,6 +123,9 @@ def update_current_user():
         }), 500
 
     user.avatar_url = avatar_url
+  elif remove_avatar and user.avatar_url:
+    old_avatar_url = user.avatar_url
+    user.avatar_url = None
 
   db.session.commit()
 
