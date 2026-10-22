@@ -1,4 +1,4 @@
-import { useAuth, useGetAllUsers } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "../ui/button";
 import {
   BookmarkCheck,
@@ -47,11 +47,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   // Per-item override: absent key = follow the active route
   const [submenuOpenOverride, setSubmenuOpenOverride] = useState<Record<string, boolean>>({});
 
-  // Role counts for the Users submenu (staff only; shares the ["users"] cache with the Users page)
   const isAdmin = user?.role === "admin";
-  const { data: allUsers = [] } = useGetAllUsers({ enabled: isAdmin });
-  const librarianCount = allUsers.filter((u) => u.role === "librarian").length;
-  const studentCount = allUsers.filter((u) => u.role === "student").length;
 
   const handleLogout = async () => {
     await logout();
@@ -86,10 +82,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
       ];
 
       if (isAdmin) {
-        staffItems.push({ label: "Users", path: "/users", icon: User, children: [
-          { label: "Librarians", path: "/users/librarian", count: librarianCount },
-          { label: "Students", path: "/users/student", count: studentCount },
-        ] });
+        staffItems.push({ label: "Users", path: "/users", icon: User });
       }
 
       staffItems.push({ label: "Settings", path: "/profile", icon: Settings });
