@@ -4,7 +4,7 @@ import type { Book } from "../../types/book.types";
 
 interface BookCardProps {
   book: Book;
-  variant?: "default" | "catalog" | "popular";
+  variant?: "default" | "catalog" | "popular" | "recommendation";
 }
 
 const BookCard = ({ book, variant = "default" }: BookCardProps) => {
@@ -12,6 +12,7 @@ const BookCard = ({ book, variant = "default" }: BookCardProps) => {
 
   if (variant !== "default") {
     const popular = variant === "popular";
+    const recommended = variant === "recommendation";
     return (
       <Link to={`/books/${book.id}`} className={`booky-card ${popular ? "booky-card-popular" : ""}`}>
         <div className="booky-cover">
@@ -19,7 +20,7 @@ const BookCard = ({ book, variant = "default" }: BookCardProps) => {
         </div>
         <h3>{book.title}</h3>
         <p className="booky-author">{book.author}</p>
-        <p className="booky-rating"><span>★ {Number(book.average_rating ?? 0).toFixed(1)}</span><span>·</span>{popular ? <span>Popular this week</span> : <span className={book.available_copies > 0 ? "booky-available" : "booky-unavailable"}>{book.available_copies > 0 ? `${book.available_copies} ${book.available_copies === 1 ? "copy" : "copies"} available` : "Currently borrowed"}</span>}</p>
+        {recommended ? <p className="booky-rating">Recommended for you</p> : <p className="booky-rating"><span>★ {Number(book.average_rating ?? 0).toFixed(1)}</span><span>·</span>{popular ? <span>Popular this week</span> : <span className={book.available_copies > 0 ? "booky-available" : "booky-unavailable"}>{book.available_copies > 0 ? `${book.available_copies} ${book.available_copies === 1 ? "copy" : "copies"} available` : "Currently borrowed"}</span>}</p>}
         {!popular && <span className="booky-details">View details&nbsp; →</span>}
       </Link>
     );

@@ -1,13 +1,15 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import "./catalog.css";
 
 export default function CatalogLayout() {
   const { user } = useAuth();
+  const { pathname } = useLocation();
+  const isDetails = /^\/books\/[^/]+\/?$/.test(pathname);
   const initials = user?.username.trim().split(/\s+/).map(part => part[0]).slice(0, 2).join("").toUpperCase() || "U";
 
   return (
-    <div className="booky">
+    <div className={`booky ${isDetails ? "booky-detail-shell" : ""}`}>
       <header className="booky-header">
         <Link to="/books" className="booky-brand" aria-label="Booky home">
           <span className="booky-mark"><img src="/catalog/brand.svg" alt="" /></span>
@@ -28,7 +30,7 @@ export default function CatalogLayout() {
         </div>
       </header>
       <main className="booky-content"><Outlet /></main>
-      <footer className="booky-footer"><span>Booky&nbsp; / &nbsp;Your campus library, a little closer.</span><span>Discover. Borrow. Grow.</span></footer>
+      {!isDetails && <footer className="booky-footer"><span>Booky&nbsp; / &nbsp;Your campus library, a little closer.</span><span>Discover. Borrow. Grow.</span></footer>}
     </div>
   );
 }
