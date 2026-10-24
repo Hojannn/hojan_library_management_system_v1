@@ -1,13 +1,29 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, Star } from "lucide-react";
 import type { Book } from "../../types/book.types";
 
 interface BookCardProps {
   book: Book;
+  variant?: "default" | "catalog" | "popular";
 }
 
-const BookCard = ({ book }: BookCardProps) => {
+const BookCard = ({ book, variant = "default" }: BookCardProps) => {
   const navigate = useNavigate();
+
+  if (variant !== "default") {
+    const popular = variant === "popular";
+    return (
+      <Link to={`/books/${book.id}`} className={`booky-card ${popular ? "booky-card-popular" : ""}`}>
+        <div className="booky-cover">
+          {book.image_url ? <img src={book.image_url} alt={`${book.title} cover`} loading="lazy" /> : <div className="booky-no-cover"><BookOpen aria-hidden="true" /><span>{book.title}</span></div>}
+        </div>
+        <h3>{book.title}</h3>
+        <p className="booky-author">{book.author}</p>
+        <p className="booky-rating"><span>★ {Number(book.average_rating ?? 0).toFixed(1)}</span><span>·</span>{popular ? <span>Popular this week</span> : <span className={book.available_copies > 0 ? "booky-available" : "booky-unavailable"}>{book.available_copies > 0 ? `${book.available_copies} ${book.available_copies === 1 ? "copy" : "copies"} available` : "Currently borrowed"}</span>}</p>
+        {!popular && <span className="booky-details">View details&nbsp; →</span>}
+      </Link>
+    );
+  }
 
   return (
     <div
