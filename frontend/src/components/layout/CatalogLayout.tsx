@@ -6,18 +6,19 @@ export default function CatalogLayout() {
   const { user } = useAuth();
   const { pathname } = useLocation();
   const isDetails = /^\/books\/[^/]+\/?$/.test(pathname);
+  const isBorrows = /^\/my-borrows\/?$/.test(pathname);
   const initials = user?.username.trim().split(/\s+/).map(part => part[0]).slice(0, 2).join("").toUpperCase() || "U";
 
   return (
-    <div className={`booky ${isDetails ? "booky-detail-shell" : ""}`}>
+    <div className={`booky ${isDetails ? "booky-detail-shell" : ""} ${isBorrows ? "booky-borrows-shell" : ""}`}>
       <header className="booky-header">
         <Link to="/books" className="booky-brand" aria-label="Booky home">
           <span className="booky-mark"><img src="/catalog/brand.svg" alt="" /></span>
           <span>Booky</span>
         </Link>
         <nav className="booky-nav" aria-label="Main navigation">
-          <Link to="/books" aria-current="page">Books</Link>
-          <Link to="/my-borrows">My Borrows</Link>
+          <Link to="/books" aria-current={!isBorrows ? "page" : undefined}>Books</Link>
+          <Link to="/my-borrows" aria-current={isBorrows ? "page" : undefined}>My Borrows</Link>
           <button type="button">My Favorites</button>
           <button type="button">About</button>
         </nav>
@@ -30,7 +31,7 @@ export default function CatalogLayout() {
         </div>
       </header>
       <main className="booky-content"><Outlet /></main>
-      {!isDetails && <footer className="booky-footer"><span>Booky&nbsp; / &nbsp;Your campus library, a little closer.</span><span>Discover. Borrow. Grow.</span></footer>}
+      {!isDetails && !isBorrows && <footer className="booky-footer"><span>Booky&nbsp; / &nbsp;Your campus library, a little closer.</span><span>Discover. Borrow. Grow.</span></footer>}
     </div>
   );
 }
