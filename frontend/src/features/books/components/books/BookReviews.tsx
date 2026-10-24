@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetBookReviews, useSubmitReview } from "@/hooks/useBooks"
-import { Loader2, Star } from "lucide-react";
+import { AxiosError } from "axios";
+import { Star } from "lucide-react";
 import React, { useState } from "react";
 
 interface BookReviewsProps {
@@ -17,6 +19,12 @@ const BookReviews = ({ bookId }: BookReviewsProps) => {
   const { data: reviews = [], isLoading, isError } = useGetBookReviews(bookId);
 
   const { mutate: addReview, isPending: isSubmitting, error: submitError } = useSubmitReview(bookId);
+
+  const submitErrorMessage = submitError
+    ? (submitError as AxiosError<{ message: string }>).response?.data?.message ||
+      submitError.message ||
+      "Failed to post review."
+    : null;
 
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -40,11 +48,7 @@ const BookReviews = ({ bookId }: BookReviewsProps) => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-10">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingState className="text-primary" containerClassName="py-10" label="Loading reviews" size={24} />;
   }
 
   if (isError) {
@@ -108,7 +112,7 @@ const BookReviews = ({ bookId }: BookReviewsProps) => {
         {/* handle error */}
         {(validationError || submitError) && (
             <p className="text-xs text-destructive">
-              {validationError || submitError?.message || "Failed to post review."}
+              {validationError || submitErrorMessage}
             </p>
           )}
         
@@ -118,10 +122,7 @@ const BookReviews = ({ bookId }: BookReviewsProps) => {
           className="px-5 py-2 text-xs font-bold rounded-xl"
         >
           {isSubmitting ? (
-            <span className="flex items-center gap-2">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Posting...
-            </span>
+            "Posting..."
           ) : (
             "Submit Review"
           )}

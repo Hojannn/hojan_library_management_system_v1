@@ -4,13 +4,15 @@ import { ProtectedRoute } from "./routes/ProtectedRoute"
 import RegisterPage from "./pages/RegisterPage"
 import MainLayout from "./components/layout/MainLayout"
 import { useAuth } from "./hooks/useAuth"
-import BooksListPage from "./pages/BooksListPage"
-import BookCatalogPage from "./pages/BookCatalogPage"
-import MyBorrowsPage from "./pages/MyBorrowsPage"
-import AdminBorrowsPage from "./pages/AdminBorrowsPage"
-import AdminUsersPage from "./pages/AdminUsersPage"
-import BookDetailsPage from "./pages/BookDetailsPage"
-import AllBooksPage from "./pages/AllBooksPage"
+import BooksListPage from "./pages/adminPage/BooksListPage"
+import BookCatalogPage from "./pages/usersPage/BookCatalogPage"
+import MyBorrowsPage from "./pages/usersPage/MyBorrowsPage"
+import AdminBorrowsPage from "./pages/adminPage/AdminBorrowsPage"
+import AdminUsersPage from "./pages/adminPage/AdminUsersPage"
+import AdminDashboardPage from "./pages/adminPage/AdminDashboardPage"
+import BookDetailsPage from "./pages/usersPage/BookDetailsPage"
+import UsersProfile from "./pages/usersPage/UsersProfile"
+import About from "./pages/About"
 
 
 const App = () => {
@@ -27,15 +29,18 @@ const App = () => {
       <Route element={<ProtectedRoute />}>
         {/* Routes with authentication */}
         <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<div>Dashboard Content</div>} />
+          <Route path="/about" element={<About />} />
           <Route path="/books" element={<BookCatalogPage/>} />
-          <Route path="/all-books" element={<AllBooksPage />} />
           <Route path="/books/:id" element={<BookDetailsPage />} />
           <Route path="/my-borrows" element={<MyBorrowsPage />} />
-          {user?.role == "admin" && (
+          <Route path="/profile" element={<UsersProfile />} />
+          {(user?.role === "admin" || user?.role === "librarian") && (
             <>
+              <Route path="/dashboard" element={<AdminDashboardPage />} />
               <Route path="/users" element={<AdminUsersPage />} />
+              <Route path="/users/:role" element={<AdminUsersPage />} />
               <Route path="/all-borrows" element={<AdminBorrowsPage />} />
+              <Route path="/all-borrows/:status" element={<AdminBorrowsPage />} />
               <Route path="/book-list" element={<BooksListPage />} />
             </>
           )}

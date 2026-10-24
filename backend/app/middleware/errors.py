@@ -9,13 +9,13 @@ def handle_database_error(error):
   db.session.rollback()
 
   return jsonify({
-      "message": "A database error occurred. Transaction rolled back.",
+      "message": "Something went wrong with the database. No changes were saved.",
       "error": str(error)
   }), 500
 
 @error_bp.app_errorhandler(404)
 def handle_404(error):
-  return jsonify({"message": "Requested resource or endpoint not found"}), 404
+  return jsonify({"message": "Page not found"}), 404
 
 @error_bp.app_errorhandler(500)
 def handle_500(error):

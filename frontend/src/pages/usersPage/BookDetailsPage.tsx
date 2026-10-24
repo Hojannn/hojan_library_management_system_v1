@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import { useGetBookById, useGetBookReviewStats } from "@/hooks/useBooks";
+import { useState } from "react";
 import { 
   ArrowLeft, 
   Bookmark, 
   Heart, 
-  Loader2, 
   Star, 
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -15,10 +16,13 @@ import BookReviews from "@/features/books/components/books/BookReviews";
 import { useCreateBorrows } from "@/hooks/useBorrows";
 import BookRecommendations from "@/features/books/components/books/BookRecommendations";
 import AuthorOtherBooks from "@/features/books/components/books/AuthorOtherBooks";
+import { useAuth } from "@/hooks/useAuth";
 
 const BookDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const { data: book, isLoading, isError, error } = useGetBookById(id);
   const { data: stats } = useGetBookReviewStats(id);
@@ -26,11 +30,7 @@ const BookDetailsPage = () => {
   const borrowMutation = useCreateBorrows();
 
   if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-      </div>
-    );
+    return <LoadingState containerClassName="h-96" label="Loading book details" />;
   }
 
   if (isError || !book) {
@@ -62,7 +62,9 @@ const BookDetailsPage = () => {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink>
-              <Link to="/dashboard">Home</Link>
+              <Link to={user?.role === "student" ? "/books" : "/dashboard"}>
+                Home
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -121,13 +123,23 @@ const BookDetailsPage = () => {
             </span>
           </div>
 
-          <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-4 max-w-2xl">
+          <p
+            className={`text-xs md:text-sm text-muted-foreground leading-relaxed max-w-2xl ${
+              showFullDescription ? "" : "line-clamp-4"
+            }`}
+          >
             {book.description || "No overview available for this title."}
           </p>
 
-          <button className="text-xs text-primary font-semibold hover:underline block pt-1">
-            View More
-          </button>
+          {book.description && book.description.length > 160 && (
+            <button
+              type="button"
+              onClick={() => setShowFullDescription((prev) => !prev)}
+              className="text-xs text-primary font-semibold hover:underline block pt-1"
+            >
+              {showFullDescription ? "View Less" : "View More"}
+            </button>
+          )}
 
           <div className="flex items-center gap-3 pt-4">
             <Button 
@@ -135,11 +147,7 @@ const BookDetailsPage = () => {
               disabled={!isAvailable || borrowMutation.isPending}
               className="gap-2 px-7 py-5 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-none hover:opacity-90"
             >
-              {borrowMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Bookmark className="w-4 h-4" />
-              )}
+              <Bookmark className="w-4 h-4" />
               {!isAvailable ? "Out of Stock" : borrowMutation.isPending ? "Borrowing..." : "Borrow"}
             </Button>
             <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-black/10 bg-transparent shadow-none hover:bg-black/5">

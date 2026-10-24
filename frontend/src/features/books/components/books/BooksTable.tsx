@@ -3,6 +3,7 @@ import type { Book } from "../../types/book.types";
 import { BookOpen, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatAuthorName } from "@/utils/formatAuthorName";
 
 interface BooksTableProps {
   books: Book[];
@@ -15,14 +16,20 @@ const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) =>
 
   if (books.length === 0) {
     return (
-      <div className="rounded-md border bg-card p-8 text-center text-muted-foreground">
-        No books found in inventory.
+      <div className="flex flex-col items-center gap-3 rounded-lg border bg-card py-12 text-center">
+        <BookOpen className="h-8 w-8 text-muted-foreground" />
+        <div>
+          <p className="text-sm font-medium text-foreground">No books found</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            There are no titles to display in this list.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border bg-card">
+    <div className="rounded-lg border bg-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -40,7 +47,7 @@ const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) =>
             return (
               <TableRow key={bookId}>
                 <TableCell>
-                  <div className="flex h-12 w-9 items-center justify-center overflow-hidden rounded border bg-muted">
+                  <div className="flex h-12 w-9 items-center justify-center overflow-hidden rounded-md border bg-muted">
                     {book.image_url ? (
                         <img
                           src={book.image_url}
@@ -53,10 +60,10 @@ const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) =>
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">{book.title}</TableCell>
-                <TableCell>{book.author}</TableCell>
+                <TableCell>{formatAuthorName(book.author)}</TableCell>
                 <TableCell>
                   {book.category_name ? (
-                    <Badge variant="secondary" className="font-normal">
+                    <Badge variant="secondary">
                       {book.category_name}
                     </Badge>
                   ) : (
@@ -71,17 +78,21 @@ const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) =>
                       variant="ghost"
                       size="icon"
                       onClick={() => onEdit(book)}
+                      aria-label={`Edit ${book.title}`}
+                      title="Edit book"
                       className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     >
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(bookId)}
-                    disabled={isDeleting}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  >
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(bookId)}
+                      disabled={isDeleting}
+                      aria-label={`Delete ${book.title}`}
+                      title="Delete book"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>

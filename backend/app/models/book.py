@@ -1,5 +1,6 @@
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.base import BaseEntity
+from app.models.schemas import BookDict
 from app.extensions import db
 
 class Book(BaseEntity): # Inheritance
@@ -30,7 +31,7 @@ class Book(BaseEntity): # Inheritance
     self.title = title
     self.author = author
     self._total_copies = total_copies
-    self._available_copies = total_copies if available_copies is not None else available_copies
+    self._available_copies = available_copies if available_copies is not None else total_copies
     self.isbn = isbn
     self.category_id = category_id
     self.description = description
@@ -62,7 +63,7 @@ class Book(BaseEntity): # Inheritance
       raise ValueError("Total copies must be 1 or greater")
 
     diff = new_total - self._total_copies
-    if self._total_copies + diff < 0:
+    if self._available_copies + diff < 0:
       raise ValueError("Cannot reduce copies below currently borrowed count")
 
     self._total_copies = new_total
@@ -77,30 +78,26 @@ class Book(BaseEntity): # Inheritance
 
   def increment_available(self):
     # this will increment the available copies when someone return a book
-    if self._available_copies > self._total_copies:
+    if self._available_copies >= self._total_copies:
       raise ValueError("All copies are already returned")
 
     self._available_copies += 1
 
   # Polymorphism
-  def to_dict(self):
-    # Calculate average rating safely from related reviews
-    ratings = [r.rating for r in self.reviews] if hasattr(self, "reviews") and self.reviews else []
-    avg_rating = round(sum(ratings) / len(ratings), 1) if ratings else 0.0
-
+  def to_dict(self) -> BookDict:
     return {
-        "id": self.id,
+        "id": str(self.id) if self.id else None,
         "isbn": self.isbn,
         "title": self.title,
         "author": self.author,
-        "category_id": self.category_id,
+        "category_id": str(self.category_id) if self.category_id else None,
         "category_name": self.category.name if self.category else None,
         "image_url": self.image_url,
         "total_copies": self.total_copies,
         "available_copies": self.available_copies,
         "description": self.description,
-        "average_rating": avg_rating,             # Computed average float
-        "total_reviews": len(ratings),
+        "average_rating": self.average_rating,
+        "total_reviews": self.total_reviews,
         "pages": self.pages,
         "created_at": self.created_at.isoformat() if self.created_at else None
     }

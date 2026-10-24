@@ -1,6 +1,29 @@
 import { api } from "@/services/api";
 import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from "../types/auth.types";
 
+
+export interface UpdateProfilePayload {
+  username?: string;
+  email?: string;
+  phone?: string;
+  avatar_url?: string;
+  student?: {
+    student_number?: string;
+    course?: string;
+    year_level?: string;
+    avatar?: File;
+  };
+}
+
+export const updateUserProfile = async (formData: FormData) => {
+  const { data } = await api.put("/users/me", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return data;
+};
+
 export const loginUser = async(credentials: LoginCredentials): Promise<AuthResponse> => {
   const res = await api.post<AuthResponse>("/auth/login", {
     email: credentials.email.trim().toLowerCase(),
@@ -20,9 +43,9 @@ export const registerUser = async(credentials: RegisterCredentials): Promise<Aut
 };
 
 export const getCurrentUser = async(): Promise<User> => {
-  const res = await api.get<User>("/auth/me");
+  const res = await api.get<{ user: User }>("/auth/me");
 
-  return res.data;
+  return res.data.user;
 }
 
 export const getAllUsers = async(): Promise<User[]> => {
@@ -36,3 +59,10 @@ export const updateUserRole = async({userId, role}: {userId: string, role: strin
 
   return res.data;
 }
+
+export const updateUserActiveStatus = async({userId, isActive}: {userId: string, isActive: boolean}): Promise<User> => {
+  const res = await api.put(`/users/${userId}/active`, {is_active: isActive});
+
+  return res.data;
+}
+

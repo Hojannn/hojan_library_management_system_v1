@@ -1,234 +1,276 @@
-import type { Borrow } from "../types/borrow.types";
-import { Book, Calendar, Clock, RotateCcw, User } from "lucide-react";
-
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  MoreHorizontal,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  Inbox,
+} from "lucide-react";
 
-interface AdminBorrowsTables {
-  borrows: Borrow[];
-  onReturn?: (borrowId: string) => void;
-  search: string;
-  isReturning: boolean;
-  returningId?: string;
-  pageSize?: number;
+interface BorrowItem {
+  id: string;
+  book_title?: string;
+  user_name?: string;
+  status: "PENDING_BORROW" | "BORROWED" | "PENDING_RETURN" | "RETURNED" | "REJECTED" | "OVERDUE";
+  borrowed_at?: string | null;
+  due_date?: string | null;
+  returned_at?: string | null;
 }
 
-const AdminBorrowsTable = ({ 
-  borrows, search, onReturn, isReturning, returningId, pageSize = 10 
-}: AdminBorrowsTables) => {
-  const [currentPage, setCurrentPage] = useState(1);
+interface AdminBorrowsTableProps {
+  borrows: BorrowItem[];
+  search: string;
+  onApproveBorrow?: (id: string) => void;
+  onRejectBorrow?: (id: string) => void;
+  onConfirmReturn?: (id: string) => void;
+  isProcessing?: boolean;
+  processingId?: string | null;
+}
 
-  const formatDate = (dateStr?: string | null) => {
-    if (!dateStr) return "—";
-    const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
-  };
+// Design-system status badges: friendly label + palette tint
+const STATUS_STYLES: Record<
+  BorrowItem["status"],
+  { label: string; className: string }
+> = {
+  PENDING_BORROW: { label: "Waiting", className: "bg-warning/10 text-warning" },
+  BORROWED: { label: "Borrowed", className: "bg-secondary text-secondary-foreground" },
+  PENDING_RETURN: { label: "Waiting for return", className: "bg-warning/10 text-warning" },
+  RETURNED: { label: "Returned", className: "bg-success/10 text-success" },
+  REJECTED: { label: "Rejected", className: "bg-muted text-muted-foreground" },
+  OVERDUE: { label: "Overdue", className: "bg-destructive/10 text-destructive" },
+};
 
-  // you can search using book title, username, and email
-  const filteredBorrows = borrows.filter((borrow) => {
-    const query = search.toLowerCase();
+const ROWS_PER_PAGE = 10;
+
+const getPageItems = (current: number, total: number): (number | "ellipsis")[] => {
+  if (total <= 5) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  const pages: (number | "ellipsis")[] = [1];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  if (start > 2) pages.push("ellipsis");
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (end < total - 1) pages.push("ellipsis");
+  pages.push(total);
+  return pages;
+};
+
+const AdminBorrowsTable = ({
+  borrows,
+  search,
+  onApproveBorrow,
+  onRejectBorrow,
+  onConfirmReturn,
+  isProcessing,
+  processingId,
+}: AdminBorrowsTableProps) => {
+  const [page, setPage] = useState(1);
+
+  // Filter by search query
+  const filteredBorrows = borrows.filter((item) => {
+    const q = search.toLowerCase();
     return (
-      borrow.book_title?.toLowerCase().includes(query) ||
-      borrow.user_name?.toLowerCase().includes(query) ||
-      borrow.user_email?.toLowerCase().includes(query)
+      item.book_title?.toLowerCase().includes(q) ||
+      item.user_name?.toLowerCase().includes(q)
     );
   });
 
-  // for pagination, total pages is 1 if there's no item or book
-  const totalItems = filteredBorrows.length;
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const totalPages = Math.max(1, Math.ceil(filteredBorrows.length / ROWS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+  const pageRows = filteredBorrows.slice(startIndex, startIndex + ROWS_PER_PAGE);
+  const endIndex = Math.min(startIndex + ROWS_PER_PAGE, filteredBorrows.length);
 
-  // for safe pagination, users can't go up the total page
-  const safePage = Math.min(currentPage, totalPages);
-  const startIndex = (safePage - 1) * pageSize; // minus 1 because index always start at zero
-  const paginatedBorrows = filteredBorrows.slice(startIndex, startIndex + pageSize);
-
+  if (filteredBorrows.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-12 text-center border rounded-lg bg-card">
+        <Inbox className="h-8 w-8 text-muted-foreground" />
+        <div>
+          <p className="text-sm font-medium text-foreground">No records found</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {search
+              ? "Try a different search term."
+              : "There are no borrow records in this list yet."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Borrower</TableHead>
-              <TableHead>Book</TableHead>
-              <TableHead>Borrowed Date</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
+    <div className="rounded-lg border bg-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Book Title</TableHead>
+            <TableHead>Borrower</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Due Date</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {pageRows.map((row) => {
+            const isLoadingRow = isProcessing && processingId === row.id;
+            const status = STATUS_STYLES[row.status] ?? {
+              label: row.status,
+              className: "bg-muted text-muted-foreground",
+            };
 
-          <TableBody>
-            {paginatedBorrows.map((borrow) => {
-              const isOverdue =
-                !borrow.returned_at &&
-                borrow.due_date &&
-                new Date(borrow.due_date) < new Date();
-              
-              const isThisRowReturning = isReturning && returningId === borrow.id;
-
-              return (
-                <TableRow key={borrow.id}>
-                  {/* borrower */}
-                  <TableCell>
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <User className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm leading-none">
-                          {borrow.user_name || "Unknown User"}
-                        </span>
-                        <span className="text-xs text-muted-foreground mt-1">
-                          {borrow.user_email}
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-
-                  {/* book details */}
-                  <TableCell>
-                    <div className="flex items-center gap-2.5">
-                      {borrow.book_image ? (
-                        <img
-                          src={borrow.book_image}
-                          alt={borrow.book_title || "Book"}
-                          className="h-10 w-7 rounded border object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-10 w-7 items-center justify-center rounded border bg-muted">
-                          <Book className="h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      )}
-                      <span className="font-medium text-sm">
-                        {borrow.book_title || "Unknown Book"}
-                      </span>
-                    </div>
-                  </TableCell>
-
-                  {/* borrowed date */}
-                  <TableCell className="text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {formatDate(borrow.borrowed_at)}
-                    </div>
-                  </TableCell>
-
-                  {/* due date */}
-                  <TableCell className="text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                      {formatDate(borrow.due_date)}
-                    </div>
-                  </TableCell>
-
-                  {/* status */}
-                  <TableCell>
-                    {borrow.returned_at ? (
-                      <Badge variant="outline" className="border-emerald-500 bg-emerald-50 text-emerald-600">
-                        Returned
-                      </Badge>
-                    ) : isOverdue ? (
-                      <Badge variant="destructive">Overdue</Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                        Active
-                      </Badge>
-                    )}
-                  </TableCell>
-
-                  {/* action */}
-                  <TableCell className="text-right">
-                    {!borrow.returned_at ? (
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        disabled={isReturning && returningId === borrow.id}
-                        onClick={() => onReturn?.(borrow.id)}
-                        className="gap-1.5 text-xs"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5" />
-                        {isThisRowReturning ? "Processing..." : "Mark Returned"}
+            return (
+              <TableRow key={row.id}>
+                <TableCell className="font-medium">{row.book_title || "Untitled"}</TableCell>
+                <TableCell>{row.user_name || "N/A"}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={cn("border-transparent", status.className)}>
+                    {status.label}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {row.due_date ? new Date(row.due_date).toLocaleDateString() : "—"}
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoadingRow}>
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
                       </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
 
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </div>
+                      {row.status === "PENDING_BORROW" && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => onApproveBorrow?.(row.id)}
+                            className="text-success focus:text-success"
+                          >
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Approve Pickup
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => onRejectBorrow?.(row.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <XCircle className="mr-2 h-4 w-4" />
+                            Reject Request
+                          </DropdownMenuItem>
+                        </>
+                      )}
 
-      {/* pagination */}
-      {totalItems > 0 && (
-        <div className="flex flex-col items-center justify-between gap-4 px-2 py-1 sm:flex-row">
-          <p className="text-xs text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{startIndex + 1}</span> to{" "}
-            <span className="font-medium text-foreground">
-              {Math.min(startIndex + pageSize, totalItems)}
-            </span>{" "}
-            of <span className="font-medium text-foreground">{totalItems}</span> entries
-          </p>
+                      {(row.status === "BORROWED" || row.status === "PENDING_RETURN" || row.status === "OVERDUE") && (
+                        <DropdownMenuItem onClick={() => onConfirmReturn?.(row.id)}>
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Mark as Returned
+                        </DropdownMenuItem>
+                      )}
 
-          <Pagination className="justify-center sm:justify-end">
+                      {(row.status === "RETURNED" || row.status === "REJECTED") && (
+                        <DropdownMenuItem disabled>
+                          Nothing waiting for action
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+
+      {/* Table Footer / Pagination */}
+      <div className="flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs text-muted-foreground">
+          Showing {startIndex + 1}–{endIndex} of {filteredBorrows.length} records
+        </p>
+
+        {totalPages > 1 && (
+          <Pagination>
             <PaginationContent>
               <PaginationItem>
-                {/* for previous button */}
                 <PaginationPrevious
                   href="#"
+                  aria-disabled={currentPage === 1 || undefined}
+                  className={cn(currentPage === 1 && "pointer-events-none opacity-50")}
                   onClick={(e) => {
                     e.preventDefault();
-                    if (safePage > 1) setCurrentPage(safePage - 1);
+                    if (currentPage > 1) setPage((p) => Math.max(1, p - 1));
                   }}
-                  aria-disabled={safePage === 1}
-                  className={safePage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
 
-              {/* links numbers */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1 ).map((pageNum) => ( // it create space for the numbers first so I use Array.from for make the code shorter
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNum === safePage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentPage(pageNum);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {getPageItems(currentPage, totalPages).map((item, i) =>
+                item === "ellipsis" ? (
+                  <PaginationItem key={`ellipsis-${i}`}>
+                    <span className="flex size-8 items-center justify-center text-muted-foreground">
+                      …
+                    </span>
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={item}>
+                    <PaginationLink
+                      href="#"
+                      isActive={item === currentPage}
+                      size="default"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(item);
+                      }}
+                    >
+                      {item}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
 
-              {/* for next button */}
               <PaginationItem>
                 <PaginationNext
                   href="#"
+                  aria-disabled={currentPage === totalPages || undefined}
+                  className={cn(currentPage === totalPages && "pointer-events-none opacity-50")}
                   onClick={(e) => {
                     e.preventDefault();
-                    if (safePage < totalPages) setCurrentPage(safePage + 1);
+                    if (currentPage < totalPages) setPage((p) => Math.min(totalPages, p + 1));
                   }}
-                  aria-disabled={safePage === totalPages}
-                  className={safePage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
-
             </PaginationContent>
           </Pagination>
-        </div>
-      )}
-
+        )}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminBorrowsTable
+export default AdminBorrowsTable;

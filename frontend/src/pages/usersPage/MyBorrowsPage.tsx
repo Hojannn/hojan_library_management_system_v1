@@ -1,7 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import BorrowsTable from "@/features/borrows/components/BorrowsTable";
 import { useBorrowHistory, useBorrows, useReturnBook } from "@/hooks/useBorrows"
-import { BookOpen, History, Loader2 } from "lucide-react";
+import { BookOpen, History } from "lucide-react";
 
 
 const MyBorrowsPage = () => {
@@ -23,7 +24,7 @@ const MyBorrowsPage = () => {
 
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div className="border-b pb-4">
         <h1 className="text-2xl font-bold tracking-tight">My Book Loans</h1>
         <p className="text-sm text-muted-foreground">
@@ -33,7 +34,7 @@ const MyBorrowsPage = () => {
 
       {/* for tabs */}
       <Tabs defaultValue="active" className="w-full space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList variant="line" className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="active" className="gap-2">
             <BookOpen className="h-4 w-4" />
             Active Loans
@@ -46,18 +47,21 @@ const MyBorrowsPage = () => {
           <TabsTrigger value="history" className="gap-2">
             <History className="h-4 w-4" />
             Borrow History
+            {historyBorrows.length > 0 && (
+              <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                {historyBorrows.length}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
         {/* for tab 1 */}
         <TabsContent value="active">
           {isLoadingActive ? (
-            <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+            <LoadingState className="text-primary" containerClassName="h-64" label="Loading active loans" />
           ) : isErrorActive ? (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-              Error loading active loans: {errorActive?.message || "Failed to fetch records"}
+              Error loading active loans: {errorActive?.message || "Could not load records"}
             </div>
           ) : activeBorrows.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
@@ -80,12 +84,10 @@ const MyBorrowsPage = () => {
         {/* for tab 2 */}
         <TabsContent value="history">
           {isLoadingHistory ? (
-            <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+            <LoadingState className="text-primary" containerClassName="h-64" label="Loading borrow history" />
           ) : isErrorHistory ? (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-              Error loading borrow history: {errorHistory?.message || "Failed to fetch records"}
+              Error loading borrow history: {errorHistory?.message || "Could not load records"}
             </div>
           ) : historyBorrows.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">

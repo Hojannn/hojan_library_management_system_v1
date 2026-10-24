@@ -1,4 +1,6 @@
-from flask import Blueprint, request, jsonify
+from uuid import UUID
+
+from flask import Blueprint, current_app, request, jsonify
 from app.extensions import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.auth_service import AuthService
@@ -24,6 +26,7 @@ def google_auth():
   except ValueError as e:
     return jsonify({ "message": str(e) }), 400
   except Exception:
+    current_app.logger.exception("Google authentication failed")
     return jsonify({ "message": "Google authentication failed" }), 500
 
 # getting user 
@@ -31,8 +34,8 @@ def google_auth():
 @jwt_required()
 def me():
 
-  user_id = int(get_jwt_identity())
   try:
+    user_id = UUID(str(get_jwt_identity()))
     user = AuthService.get_current_user(user_id)
     return jsonify({ "user": user.to_dict() }), 200
   except ValueError as e:
@@ -77,17 +80,17 @@ def register():
   username = data.get("username", "").strip()
   email = data.get("email", "").strip().lower()
   password = data.get("password", "")
-  role = data.get("role", "student").strip().lower()
 
-  if not all([email, username, password, role]):
-    return jsonify({
-      "message": "All fields are required"
-    }), 400
+  if not username or not email or not password:
+      return jsonify({
+          "message": "Username, email, and password are required"
+      }), 400
 
   try:
-    AuthService.register_user(username, email, password, role)
+    AuthService.register_user(username, email, password)
     return jsonify({ "message": "User created successfully" }), 201
   except ValueError as e:
     return jsonify({ "message": str(e) }), 409
-  except Exception:
-    return jsonify({ "message": "Failed to create user" }), 500
+  except Exception as e:
+    print("Registration error:", e)
+    return jsonify({ f"message": "Failed to create user" }), 500

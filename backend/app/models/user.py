@@ -1,4 +1,5 @@
 from app.models.base import BaseEntity
+from app.models.schemas import UserDict
 from app.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -7,6 +8,7 @@ class User(BaseEntity): # Inheritance
 
   username = db.Column(db.String(100), unique=True, nullable=False)
   email = db.Column(db.String(100), unique=True, nullable=False)
+  phone = db.Column(db.String(30), nullable=True)
   is_active = db.Column(db.Boolean, nullable=False, default=True)
   role = db.Column(db.String(20), nullable=False, default='student')
   created_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
@@ -15,6 +17,7 @@ class User(BaseEntity): # Inheritance
   avatar_url = db.Column(db.String(500), nullable=True)
 
   borrows = db.relationship("Borrow", backref="user", lazy=True)
+  student = db.relationship("Student", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
   # protect the raw pass 
   _password_hash = db.Column("password_hash", db.String(255), nullable=True)
@@ -26,15 +29,17 @@ class User(BaseEntity): # Inheritance
         password: str | None = None, 
         role: str = "student",
         google_id: str | None = None,
-        avatar_url: str | None = None
+        avatar_url: str | None = None,
+        phone: str | None = None
       ):
     self.username = username
     self.email = email
     self.role = role
     self.google_id = google_id
     self.avatar_url = avatar_url
+    self.phone = phone
 
-    # users who signup/login don't need to input password
+    # users who signup/login with google don't need to input password
     if password:
       self.password = password
 
@@ -59,13 +64,20 @@ class User(BaseEntity): # Inheritance
     return self.role.lower() in ['admin', 'librarian']
 
   # polymorphism
-  def to_dict(self):
+  def to_dict(self) -> UserDict:
     return {
-        "id": self.id,
+        "id": str(self.id) if self.id else None,
         "username": self.username,
         "email": self.email,
         "role": self.role,
         "is_active": self.is_active,
+        "phone": self.phone,
+        "avatar_url": self.avatar_url,
         "is_google_account": self.google_id is not None,
-        "created_at": self.created_at if self.created_at else None,
+        "created_at": (
+            self.created_at.isoformat()
+            if self.created_at
+            else None
+        ),
+        "student": self.student.to_dict() if self.student else None,
     }

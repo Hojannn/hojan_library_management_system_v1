@@ -10,7 +10,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   return (
     <aside
       className={cn(
-        "relative hidden md:flex flex-col border-r bg-card transition-all duration-300 ease-in-out h-screen top-0",
+        "sticky top-0 hidden md:flex shrink-0 self-start flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out h-screen overflow-y-auto",
         collapsed ? "w-16" : "w-64"
       )}
     >
