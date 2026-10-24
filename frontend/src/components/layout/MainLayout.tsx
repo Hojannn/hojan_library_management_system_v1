@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import CatalogLayout from "./CatalogLayout";
 import { Sidebar } from "./Sidebar";
 import { MobileHeader } from "./MobileHeader";
 import { Footer } from "./Footer";
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const { pathname } = useLocation();
+
+  if (pathname === "/books" || pathname === "/books/") return <CatalogLayout />;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
