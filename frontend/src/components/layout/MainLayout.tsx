@@ -9,7 +9,7 @@ const MainLayout = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const { pathname } = useLocation();
 
-  if (pathname === "/books" || pathname === "/books/") return <CatalogLayout />;
+  if (/^\/books(?:\/[^/]+)?\/?$/.test(pathname)) return <CatalogLayout />;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">

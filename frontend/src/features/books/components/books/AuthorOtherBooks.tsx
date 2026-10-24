@@ -1,76 +1,13 @@
-import { Badge } from "@/components/ui/badge";
+﻿import { Link } from "react-router-dom";
+import { useBooks } from "@/hooks/useBooks";
 import { LoadingState } from "@/components/ui/loading-spinner";
-import { BookOpen } from "lucide-react";
-import { useGetBookRecommendations } from "@/hooks/useBooks";
-import { formatAuthorName } from "../../../../utils/formatAuthorName"
+import { formatAuthorName } from "@/utils/formatAuthorName";
 
-  interface RelatedBookProps {
-    currentBookId: string;
-    authorName: string;
-    onSelectBook: (id: string) => void;
-  }
-
-  const AuthorOtherBooks = ({ currentBookId, authorName, onSelectBook }: RelatedBookProps) => {
-
-    const { data: recommendations, isLoading } = useGetBookRecommendations(currentBookId);
-
-    const authorBooks = (recommendations || []).filter((book) => 
-      book.id !== currentBookId && book.author === authorName
-    ).slice(0, 3);
-
-    const displayName = formatAuthorName(authorName,1);
-
-    if (isLoading) {
-    return <LoadingState className="text-muted-foreground" containerClassName="p-6" label="Loading more books by this author" size={16} />;
-  }
-
-    return (
-      <div className="space-y-4">
-        <h3 className="text-sm font-bold tracking-tight text-foreground">
-          More by {displayName}
-        </h3>
-
-        {authorBooks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-4 text-center rounded-xl bg-muted/40 border border-dashed border-border/60 space-y-2">
-            <BookOpen className="w-5 h-5 text-muted-foreground/60" />
-            <p className="text-xs text-muted-foreground font-medium">
-              No otauthorBooks by {displayName} found in the library.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {authorBooks.map((book) => (
-              <div
-                key={book.id}
-                onClick={() => onSelectBook(book.id)}
-                className="flex items-center gap-3 p-2 rounded-xl hover:bg-accent cursor-pointer transition-colors group"
-              >
-                <img
-                  src={book.image_url || "/placeholder-cover.jpg"}
-                  alt={book.title}
-                  className="w-12 h-16 object-cover rounded-md border shadow-xs shrink-0 group-hover:scale-105 transition-transform"
-                />
-                <div className="space-y-1 min-w-0">
-                  <h4 className="text-xs font-bold text-foreground truncate" title={book.title}>
-                    {book.title}
-                  </h4>
-                  <Badge
-                    variant="secondary"
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                      book.available_copies > 0
-                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
-                        : "bg-muted text-muted-foreground border border-border"
-                    }`}
-                  >
-                    {book.available_copies > 0 ? "Available" : "On Loan"}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  export default AuthorOtherBooks;
+interface AuthorOtherBooksProps { currentBookId: string; authorName: string; }
+export default function AuthorOtherBooks({ currentBookId, authorName }: AuthorOtherBooksProps) {
+  const { data: books = [], isLoading, isError, refetch } = useBooks();
+  const authorBooks = books.filter(book => book.id !== currentBookId && book.author.trim().toLowerCase() === authorName.trim().toLowerCase()).slice(0, 3);
+  return <aside className="details-author-panel"><h2>More by this author</h2><p className="details-author-name">{formatAuthorName(authorName, 1)}</p>
+    {isLoading ? <LoadingState label="Loading author’s books" containerClassName="py-8" size={20} /> : isError ? <div className="details-author-empty"><p>Couldn’t load this author’s books.</p><button type="button" onClick={() => void refetch()}>Try again</button></div> : !authorBooks.length ? <div className="details-author-empty"><img src="/book-details/empty-books.svg" alt="" /><p>No other books by this author<br />are in the library yet.</p></div> : <div className="details-author-books">{authorBooks.map(book => <Link key={book.id} to={`/books/${book.id}`}><div className="details-author-cover">{book.image_url ? <img src={book.image_url} alt="" /> : <img src="/book-details/empty-books.svg" alt="" />}</div><span><strong>{book.title}</strong><small>{book.available_copies > 0 ? "Available" : "On loan"}</small></span></Link>)}</div>}
+  </aside>;
+}
