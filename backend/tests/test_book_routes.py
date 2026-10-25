@@ -135,6 +135,42 @@ class BookRouteTests(unittest.TestCase):
             search_query="", category_id=None, page=1, limit=10
         )
 
+    @patch("app.blueprints.books.routes.BookService.get_user_favorites")
+    @patch("app.blueprints.books.routes.BookService.add_favorite")
+    @patch("app.blueprints.books.routes.BookService.remove_favorite")
+    def test_favorites_routes_list_add_and_remove(
+        self, remove_fav, add_fav, get_favs
+    ):
+        get_favs.return_value = [FakeBook(self.book_id)]
+        res = self.client.get(
+            "/api/books/favorites", headers=self.headers(self.student_token)
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_json()[0]["id"], str(self.book_id))
+
+        add_fav.return_value = SimpleNamespace(
+            to_dict=lambda: {"book_id": str(self.book_id)}
+        )
+        res = self.client.post(
+            f"/api/books/{self.book_id}/favorite",
+            headers=self.headers(self.student_token),
+        )
+        self.assertEqual(res.status_code, 201)
+
+        add_fav.side_effect = LookupError("Book not found")
+        res = self.client.post(
+            f"/api/books/{self.book_id}/favorite",
+            headers=self.headers(self.student_token),
+        )
+        self.assertEqual(res.status_code, 404)
+
+        res = self.client.delete(
+            f"/api/books/{self.book_id}/favorite",
+            headers=self.headers(self.student_token),
+        )
+        self.assertEqual(res.status_code, 200)
+        remove_fav.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

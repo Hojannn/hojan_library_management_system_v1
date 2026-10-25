@@ -149,5 +149,39 @@ class BookArchiveServiceTests(BookServiceTestCase):
         self.assertEqual(self.book.available_copies, 0)
 
 
+class BookFavoriteServiceTests(BookServiceTestCase):
+    def setUp(self):
+        super().setUp()
+        self.user = User("Ana Cruz", "ana@example.com")
+        self.book1 = Book("Clean Code", "Robert C. Martin")
+        self.book2 = Book("Refactoring", "Martin Fowler")
+        self.archived = Book("Archived Book", "Author")
+        self.archived.is_deleted = True
+        db.session.add_all([self.user, self.book1, self.book2, self.archived])
+        db.session.commit()
+
+    def test_add_get_and_remove_favorites(self):
+        fav1 = BookService.add_favorite(str(self.user.id), str(self.book1.id))
+        fav1_dup = BookService.add_favorite(self.user.id, self.book1.id)
+        self.assertEqual(fav1.id, fav1_dup.id)
+
+        BookService.add_favorite(self.user.id, self.book2.id)
+        favorites = BookService.get_user_favorites(str(self.user.id))
+        self.assertEqual(len(favorites), 2)
+        self.assertEqual({b.title for b in favorites}, {"Clean Code", "Refactoring"})
+
+        removed = BookService.remove_favorite(str(self.user.id), str(self.book1.id))
+        self.assertTrue(removed)
+        self.assertFalse(BookService.remove_favorite(self.user.id, self.book1.id))
+        self.assertEqual(
+            [b.title for b in BookService.get_user_favorites(self.user.id)],
+            ["Refactoring"],
+        )
+
+    def test_cannot_favorite_missing_or_archived_book(self):
+        with self.assertRaisesRegex(LookupError, "Book not found"):
+            BookService.add_favorite(self.user.id, self.archived.id)
+
+
 if __name__ == "__main__":
     unittest.main()

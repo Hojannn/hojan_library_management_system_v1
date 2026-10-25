@@ -31,7 +31,12 @@ export function StaffSettings() {
   if (!user) return null;
 
   const initials = user.username.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-  const roleLabel = user.role === "admin" ? "Administrator" : "Librarian";
+  const roleLabel =
+    user.role === "admin"
+      ? "Administrator"
+      : user.role === "librarian"
+        ? "Librarian"
+        : "Student";
 
   const handlePhoto = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -85,7 +90,7 @@ export function StaffSettings() {
         <form id="profile-settings-form" onSubmit={handleSave} className={`${cardClass} space-y-6`}>
           <div className="flex items-center gap-2">
             <UserRound className="size-5 text-primary" />
-            <div><h2 className="text-lg font-semibold sm:text-xl">Profile details</h2><p className="text-sm text-muted-foreground sm:text-base">Your staff identity across Booky.</p></div>
+            <div><h2 className="text-lg font-semibold sm:text-xl">Profile details</h2><p className="text-sm text-muted-foreground sm:text-base">{user.role === "student" ? "Your member identity across Booky." : "Your staff identity across Booky."}</p></div>
           </div>
           <div className="flex flex-col gap-5 border-y border-border py-5 sm:flex-row sm:items-center">
             <Avatar className="size-20">

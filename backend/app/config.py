@@ -1,12 +1,24 @@
 import os
 from datetime import timedelta
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 class Config:
   SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
   SQLALCHEMY_TRACK_MODIFICATIONS = False
+  SQLALCHEMY_ENGINE_OPTIONS = {
+    "pool_pre_ping": True,
+    "pool_recycle": 180,
+    "connect_args": {
+      "connect_timeout": 10,
+      "keepalives": 1,
+      "keepalives_idle": 30,
+      "keepalives_interval": 10,
+      "keepalives_count": 3,
+    },
+  }
 
   JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
   JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=4)

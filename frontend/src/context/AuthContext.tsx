@@ -1,10 +1,11 @@
 import type { User } from "@/features/auth/types/auth.types";
 import React, { useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { googleLogout } from "@react-oauth/google";
 import { AuthContext } from "./auth-context";
 
 interface AuthProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const readSession = (): { token: string | null; user: User | null } => {
@@ -45,6 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
+    googleLogout();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken(null);
@@ -62,11 +64,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAuthenticated: !!token,
         isLoading,
         login,
-        logout
+        logout,
       }}
     >
-      { children }
+      {children}
     </AuthContext.Provider>
-  )
-
-}
+  );
+};

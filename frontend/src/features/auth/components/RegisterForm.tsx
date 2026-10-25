@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, EyeOff } from "lucide-react";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -47,11 +47,10 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
   };
 
   const inputClasses =
-    "w-full h-[48px] px-[15px] py-2 text-sm bg-card/45 border border-card/55 rounded-[10px] text-foreground placeholder:text-muted-foreground shadow-none focus-visible:border-primary focus-visible:ring-ring/50";
+    "w-full h-[48px] px-[16px] py-2 text-sm bg-[var(--control)] border border-[var(--glass-border)] dark:border-border rounded-[12px] text-foreground placeholder:text-muted-foreground shadow-[var(--elevation-sm)] focus-visible:border-primary focus-visible:ring-ring/40";
 
   return (
     <div className="w-full space-y-3">
-
       {serverError && (
         <div
           role="alert"
@@ -63,7 +62,6 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-[18px]">
-
         <div className="space-y-[9px]">
           <Label htmlFor="email" className="text-xs font-bold leading-normal text-foreground">
             Email address
@@ -116,20 +114,20 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                placeholder="Enter your password"
+                placeholder="••••••••••••"
                 className={`${inputClasses} pr-10`}
                 {...register("password")}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
+                  <EyeOff className="size-[18px]" />
                 ) : (
-                  <img src="/images/login/show-password.svg" alt="" width="24" height="24" />
+                  <Eye className="size-[18px]" />
                 )}
               </button>
             </div>
@@ -151,20 +149,20 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                 id="confirmPassword"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                placeholder="Enter your password"
+                placeholder="••••••••••••"
                 className={`${inputClasses} pr-10`}
                 {...register("confirmPassword")}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
+                  <EyeOff className="size-[18px]" />
                 ) : (
-                  <img src="/images/login/show-password.svg" alt="" width="24" height="24" />
+                  <Eye className="size-[18px]" />
                 )}
               </button>
             </div>
@@ -179,15 +177,9 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-[52px] bg-primary hover:bg-primary-hover text-primary-foreground rounded-[20px] text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 shadow-none mt-1"
+          className="w-full h-[52px] bg-primary hover:bg-primary-hover text-primary-foreground rounded-[20px] text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 shadow-[var(--elevation-sm)] mt-1"
         >
-          {isSubmitting ? (
-            "Creating Account..."
-          ) : (
-            <>
-              Create account
-            </>
-          )}
+          {isSubmitting ? "Creating Account..." : "Create account"}
         </Button>
       </form>
     </div>

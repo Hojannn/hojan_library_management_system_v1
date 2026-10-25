@@ -21,9 +21,9 @@
   --foreground: #2b2c28;
   --heading: #655039;
   --muted-foreground: #79766d;
-  --card: rgb(255 255 255 / 62%);
+  --card: rgb(249 247 241 / 82%);
   --card-foreground: #2b2c28;
-  --popover: #fafaf5;
+  --popover: #f7f5ee;
   --popover-foreground: #2b2c28;
   --primary: #d6ac56;
   --primary-hover: #c79b45;
@@ -45,10 +45,10 @@
   --elevation-md: 0 4px 16px rgb(57 49 35 / 5%);
   --elevation-lg: 0 8px 24px rgb(57 49 35 / 7%);
   --elevation-xl: 0 16px 40px rgb(57 49 35 / 10%);
-  --glass-border: rgb(255 255 255 / 65%);
-  --glass-shadow: 0 4px 20px rgb(57 49 35 / 3%);
+  --glass-border: rgb(255 255 255 / 42%);
+  --glass-shadow: 0 4px 20px rgb(57 49 35 / 5%);
   --glass-blur: 20px;
-  --control: rgb(255 255 255 / 58%);
+  --control: rgb(247 245 238 / 75%);
   --banner: #e9ddc5;
   --banner-foreground: #3c352c;
   --overlay: rgb(51 52 46 / 30%);
@@ -206,6 +206,7 @@
     letter-spacing: -0.01em;
     background: var(--background);
     color-scheme: light;
+    scrollbar-gutter: stable;
   }
   html.dark { color-scheme: dark; }
   body {

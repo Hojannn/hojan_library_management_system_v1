@@ -9,6 +9,36 @@ from app.services.book_service import BookService
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 
 
+@books_bp.get("/favorites")
+@jwt_required()
+def get_user_favorites():
+  user_id = get_jwt_identity()
+  books = BookService.get_user_favorites(user_id)
+  return jsonify([book.to_dict() for book in books]), 200
+
+
+@books_bp.post("/<uuid:id>/favorite")
+@jwt_required()
+def add_favorite(id):
+  user_id = get_jwt_identity()
+  try:
+    favorite = BookService.add_favorite(user_id=user_id, book_id=id)
+    return jsonify({
+      "message": "Book added to favorites",
+      "favorite": favorite.to_dict(),
+    }), 201
+  except LookupError as e:
+    return jsonify({"message": str(e)}), 404
+
+
+@books_bp.delete("/<uuid:id>/favorite")
+@jwt_required()
+def remove_favorite(id):
+  user_id = get_jwt_identity()
+  BookService.remove_favorite(user_id=user_id, book_id=id)
+  return jsonify({"message": "Book removed from favorites"}), 200
+
+
 @books_bp.get("/admin/catalog")
 @admin_required()
 def get_staff_catalog():

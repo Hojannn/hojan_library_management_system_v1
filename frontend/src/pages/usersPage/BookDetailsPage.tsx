@@ -1,10 +1,15 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { BookOpen, Star } from "lucide-react";
+import { BookOpen, Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGetBookById, useGetBookReviewStats } from "@/hooks/useBooks";
+import {
+  useFavoriteBooks,
+  useGetBookById,
+  useGetBookReviewStats,
+  useToggleFavoriteBook,
+} from "@/hooks/useBooks";
 import { useCreateBorrows } from "@/hooks/useBorrows";
 import { useAuth } from "@/hooks/useAuth";
 import BookDetailsTable from "@/features/books/components/books/BookDetailsTable";
@@ -23,12 +28,15 @@ function BookDetailsContent({ bookId }: { bookId?: string }) {
   const [expanded, setExpanded] = useState(false);
   const { data: book, isLoading, isError, refetch } = useGetBookById(bookId);
   const { data: stats } = useGetBookReviewStats(bookId);
+  const { data: favorites } = useFavoriteBooks();
+  const toggleFavorite = useToggleFavoriteBook();
   const borrow = useCreateBorrows();
   if (isLoading) return <LoadingState containerClassName="h-96" label="Loading book details" />;
   if (isError || !book) return <div className="details-empty" role="alert"><h1>We couldn’t load this book.</h1><p>Please try again or return to the catalog.</p><Button onClick={() => void refetch()}>Try again</Button><Link to="/books">Back to catalog</Link></div>;
   const count = stats?.total_reviews ?? book.total_reviews ?? 0;
   const average = stats?.average_rating ?? book.average_rating ?? 0;
   const available = book.available_copies > 0;
+  const isFavorite = Boolean(favorites?.some((fav) => fav.id === book.id));
   return <article className="book-details">
     <nav className="details-breadcrumb" aria-label="Breadcrumb"><Link to={user?.role === "student" ? "/books" : "/dashboard"}>Home</Link><span aria-hidden="true">›</span><Link to="/books">Catalog</Link><span aria-hidden="true">›</span><span aria-current="page">{book.title}</span></nav>
     <div className="details-overview">
@@ -39,7 +47,28 @@ function BookDetailsContent({ bookId }: { bookId?: string }) {
         <div className="details-rating"><span className="details-stars" role="img" aria-label={`${average.toFixed(1)} out of 5 stars`}>{[1, 2, 3, 4, 5].map(n => <Star key={n} size={17} aria-hidden="true" fill={n <= Math.round(average) ? "currentColor" : "none"} />)}</span><strong>{average.toFixed(1)}</strong><span>{count} {count === 1 ? "review" : "reviews"}</span></div>
         <p className={`details-description ${expanded ? "is-expanded" : ""}`}>{book.description || "No overview available for this title."}</p>
         {book.description && book.description.length > 160 && <button type="button" className="details-expand" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "View less" : "View more"}</button>}
-        <div className="details-actions"><Button className="details-borrow" disabled={!available || borrow.isPending || borrow.isSuccess} onClick={() => borrow.mutate({ book_id: book.id })}><img src="/book-details/borrow.svg" alt="" />{borrow.isPending ? "Submitting…" : borrow.isSuccess ? "Request submitted" : !available ? "Out of stock" : "Borrow book"}</Button><Button type="button" variant="outline" className="details-favorite" aria-label="Add to favorites"><img src="/book-details/heart.svg" alt="" /></Button></div>
+        <div className="details-actions">
+          <Button className="details-borrow" disabled={!available || borrow.isPending || borrow.isSuccess} onClick={() => borrow.mutate({ book_id: book.id })}>
+            <img src="/book-details/borrow.svg" alt="" />
+            {borrow.isPending ? "Submitting…" : borrow.isSuccess ? "Request submitted" : !available ? "Out of stock" : "Borrow book"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className={`details-favorite ${isFavorite ? "is-favorite" : ""}`}
+            aria-pressed={isFavorite}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            disabled={toggleFavorite.isPending}
+            onClick={() => toggleFavorite.mutate({ bookId: book.id, isFavorite })}
+          >
+            <Heart
+              size={20}
+              fill={isFavorite ? "currentColor" : "none"}
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+          </Button>
+        </div>
         <p className="details-borrow-note">14-day borrowing period</p>
       </div>
       <AuthorOtherBooks currentBookId={book.id} authorName={book.author} />

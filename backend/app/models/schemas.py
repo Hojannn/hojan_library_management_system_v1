@@ -59,6 +59,13 @@ class ReviewDict(TypedDict):
   created_at: str | None
 
 
+class FavoriteDict(TypedDict):
+  id: str | None
+  user_id: str | None
+  book_id: str | None
+  created_at: str | None
+
+
 BorrowStatus = Literal[
   "PENDING_BORROW",
   "READY_FOR_PICKUP",

@@ -1,10 +1,64 @@
+import re
+import socket
+import time
 from flask import current_app
 from google.auth.exceptions import GoogleAuthError
 from google.oauth2 import id_token
 from google.auth.transport import requests
+import requests as http_requests
+import urllib3.util.connection as urllib3_connection
 from app.models import User, Student
 from app.extensions import db
 from flask_jwt_extended import create_access_token
+
+# Prefer IPv4 for outbound HTTPS calls (e.g. Google OAuth cert fetches) so
+# broken local IPv6 routes do not stall token verification for 60-100 seconds.
+urllib3_connection.allowed_gai_family = lambda: socket.AF_INET
+
+
+class _CachedGoogleRequest(requests.Request):
+  """Caches Google OAuth2 public certificate GET responses in memory."""
+
+  def __init__(self, session=None):
+    super().__init__(session=session or http_requests.Session())
+    self._cert_cache = {}
+
+  def __call__(self, url, method="GET", body=None, headers=None, timeout=None, **kwargs):
+    normalized_method = (method or "GET").upper()
+    now = time.monotonic()
+
+    if normalized_method == "GET":
+      cached = self._cert_cache.get(url)
+      if cached and now < cached[0]:
+        return cached[1]
+
+    response = super().__call__(
+      url,
+      method=normalized_method,
+      body=body,
+      headers=headers,
+      timeout=timeout or 5,
+      **kwargs,
+    )
+
+    if normalized_method == "GET" and getattr(response, "status", None) == 200:
+      cache_control = ""
+      if getattr(response, "headers", None):
+        cache_control = (
+          response.headers.get("Cache-Control")
+          or response.headers.get("cache-control")
+          or ""
+        )
+      match = re.search(r"max-age=(\d+)", cache_control)
+      ttl = int(match.group(1)) if match else 3600
+      if ttl > 0:
+        self._cert_cache[url] = (now + ttl, response)
+
+    return response
+
+
+_GOOGLE_AUTH_REQUEST = _CachedGoogleRequest()
+
 
 class AuthService:
 
@@ -51,7 +105,10 @@ class AuthService:
     # Firebase Authentication token.
     try:
       id_info = id_token.verify_oauth2_token(
-        token, requests.Request(), google_client_id
+        token,
+        _GOOGLE_AUTH_REQUEST,
+        google_client_id,
+        clock_skew_in_seconds=10,
       )
     except (ValueError, GoogleAuthError) as exc:
       current_app.logger.warning(

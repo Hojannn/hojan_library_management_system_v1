@@ -16,7 +16,20 @@ def create_app():
   app = Flask(__name__)
   app.config.from_object(Config)
 
-  CORS(app, origins=["http://localhost:5173", "https://library-management-system-libra.vercel.app"])
+  db_uri = app.config.get("SQLALCHEMY_DATABASE_URI") or ""
+  if not db_uri.startswith("postgresql"):
+    engine_opts = dict(app.config.get("SQLALCHEMY_ENGINE_OPTIONS") or {})
+    engine_opts.pop("connect_args", None)
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = engine_opts
+
+  CORS(
+    app,
+    origins=[
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "https://library-management-system-libra.vercel.app",
+    ],
+  )
 
   db.init_app(app)
   migrate.init_app(app, db)

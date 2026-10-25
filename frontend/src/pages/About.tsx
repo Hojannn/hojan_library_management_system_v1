@@ -6,9 +6,21 @@ import type { Developer } from "./about-content";
 import "./about.css";
 
 const socialPlatforms = [
-  { key: "github", label: "GitHub", path: "M9 19c-4.3 1.3-4.3-2.2-6-2.7m12 5v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.2-1.5 6.2-6.9a5.4 5.4 0 0 0-1.5-3.8 5 5 0 0 0-.1-3.8S17.5.9 15 2.6a13 13 0 0 0-6 0C6.5.9 5.3 1.2 5.3 1.2a5 5 0 0 0-.1 3.8 5.4 5.4 0 0 0-1.5 3.8c0 5.4 3.2 6.6 6.2 6.9a3.4 3.4 0 0 0-.9 2.7v3.9" },
-  { key: "facebook", label: "Facebook", path: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" },
-  { key: "instagram", label: "Instagram", path: "" },
+  {
+    key: "github",
+    label: "GitHub",
+    path: "M9 19c-4.3 1.3-4.3-2.2-6-2.7m12 5v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.2-1.5 6.2-6.9a5.4 5.4 0 0 0-1.5-3.8 5 5 0 0 0-.1-3.8S17.5.9 15 2.6a13 13 0 0 0-6 0C6.5.9 5.3 1.2 5.3 1.2a5 5 0 0 0-.1 3.8 5.4 5.4 0 0 0-1.5 3.8c0 5.4 3.2 6.6 6.2 6.9a3.4 3.4 0 0 0-.9 2.7v3.9",
+  },
+  {
+    key: "facebook",
+    label: "Facebook",
+    path: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z",
+  },
+  {
+    key: "instagram",
+    label: "Instagram",
+    path: "M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5zm8 9a4 4 0 1 1-8 0 4 4 0 0 1 8 0zm1.5-5.5h.01",
+  },
 ] as const;
 
 function validSocialUrl(value?: string): string | undefined {
@@ -82,7 +94,9 @@ export default function About() {
                     const url = validSocialUrl(selectedDeveloper.socials[key]);
                     return url ? (
                       <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={`${selectedDeveloper.name} on ${label} (opens in a new tab)`}>
-                        {key === "instagram" ? <img src="/about/instagram.svg" width="24" height="24" alt="" /> : <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path} /></svg>}
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d={path} />
+                        </svg>
                       </a>
                     ) : null;
                   })}

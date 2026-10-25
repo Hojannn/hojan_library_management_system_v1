@@ -3,56 +3,55 @@ import type { Book, BookResponse, ReviewResponse, ReviewStatsResponse, StaffBook
 import type { BookFormData } from "../types/book.schema";
 import { type IReview, ReviewEntity } from "../models/ReviewEntity";
 
-export const getBookRecommendations = async(bookId: string) => {
+export const getBookRecommendations = async (bookId: string) => {
   const { data } = await api.get<Book[]>(`/books/${bookId}/related`);
 
   return data;
-}
+};
 
-export const getBookReviews = async(bookId: string): Promise<ReviewResponse[]> => {
+export const getBookReviews = async (bookId: string): Promise<ReviewResponse[]> => {
   const { data } = await api.get<{ reviews: ReviewResponse[] }>(`/books/${bookId}/reviews`);
 
   return data.reviews;
-}
+};
 
-export const getBookReviewStats = async(bookId: string): Promise<ReviewStatsResponse> => {
+export const getBookReviewStats = async (bookId: string): Promise<ReviewStatsResponse> => {
   const { data } = await api.get<ReviewStatsResponse>(`/books/${bookId}/reviews/stats`);
 
   return data;
-}
+};
 
-export const submitReview = async(
-    bookId: string, 
-    payload: { rating: number; comment: string }
-  ) => {
+export const submitReview = async (
+  bookId: string,
+  payload: { rating: number; comment: string }
+) => {
+  const { data } = await api.post<IReview>(`/books/${bookId}/reviews`, payload);
 
-    const { data } = await api.post<IReview>(`/books/${bookId}/reviews`, payload);
+  return new ReviewEntity(data);
+};
 
-    return new ReviewEntity(data);
-}
-
-export const getBooks = async(categoryId?: string): Promise<Book[]> => {
-  // Add category filter to the request if a category was selected 
+export const getBooks = async (categoryId?: string): Promise<Book[]> => {
+  // Add category filter to the request if a category was selected
   const params = categoryId ? { category_id: categoryId, limit: 1000 } : { limit: 1000 };
   const { data } = await api.get("/books", { params });
 
   return Array.isArray(data) ? data : data.books || [];
 };
 
-export const getStaffBooks = async(state: StaffBookState): Promise<Book[]> => {
+export const getStaffBooks = async (state: StaffBookState): Promise<Book[]> => {
   const { data } = await api.get<Book[]>("/books/admin/catalog", {
     params: { state },
   });
   return data;
 };
 
-export const getBookById = async(bookId: string): Promise<Book> => {
+export const getBookById = async (bookId: string): Promise<Book> => {
   const { data } = await api.get(`/books/${bookId}`);
 
   return data;
-}
+};
 
-export const createBook = async( data: BookFormData ): Promise<BookResponse> => {
+export const createBook = async (data: BookFormData): Promise<BookResponse> => {
   const formData = new FormData();
 
   formData.append("title", data.title);
@@ -63,7 +62,7 @@ export const createBook = async( data: BookFormData ): Promise<BookResponse> => 
   if (data.description) formData.append("description", data.description);
   if (data.pages) formData.append("pages", String(data.pages));
 
-  if (data.image instanceof File){
+  if (data.image instanceof File) {
     formData.append("image", data.image);
   }
 
@@ -73,14 +72,13 @@ export const createBook = async( data: BookFormData ): Promise<BookResponse> => 
     },
   });
 
-  return res.data
+  return res.data;
 };
 
-export const updateBook = async(
-  bookId: string, 
+export const updateBook = async (
+  bookId: string,
   data: BookFormData
 ): Promise<BookResponse> => {
-
   const formData = new FormData();
 
   if (data.title !== undefined) formData.append("title", data.title);
@@ -91,25 +89,40 @@ export const updateBook = async(
   if (data.description !== undefined) formData.append("description", data.description ?? "");
   if (data.pages !== undefined) formData.append("pages", String(data.pages));
 
-  if(data.image instanceof File){
+  if (data.image instanceof File) {
     formData.append("image", data.image);
   }
 
   const res = await api.put<BookResponse>(`/books/${bookId}`, formData, {
     headers: {
-      "Content-Type": "multipart/form-data"
-    }
+      "Content-Type": "multipart/form-data",
+    },
   });
 
   return res.data;
 };
 
-export const deleteBook = async(bookId: string): Promise<BookResponse> => {
+export const deleteBook = async (bookId: string): Promise<BookResponse> => {
   const { data } = await api.delete<BookResponse>(`/books/${bookId}`);
   return data;
 };
 
-export const restoreBook = async(bookId: string): Promise<BookResponse> => {
+export const restoreBook = async (bookId: string): Promise<BookResponse> => {
   const { data } = await api.put<BookResponse>(`/books/restore/${bookId}`);
+  return data;
+};
+
+export const getFavoriteBooks = async (): Promise<Book[]> => {
+  const { data } = await api.get<Book[]>("/books/favorites");
+  return Array.isArray(data) ? data : [];
+};
+
+export const addFavoriteBook = async (bookId: string): Promise<{ message: string }> => {
+  const { data } = await api.post<{ message: string }>(`/books/${bookId}/favorite`);
+  return data;
+};
+
+export const removeFavoriteBook = async (bookId: string): Promise<{ message: string }> => {
+  const { data } = await api.delete<{ message: string }>(`/books/${bookId}/favorite`);
   return data;
 };
