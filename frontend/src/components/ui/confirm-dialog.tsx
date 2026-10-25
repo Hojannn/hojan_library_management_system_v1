@@ -1,6 +1,13 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 
+const confirmationDialogContentClass = "gap-5 rounded-2xl bg-popover p-5 text-popover-foreground sm:max-w-md sm:p-6"
+const confirmationDialogTitleClass = "text-xl font-semibold leading-tight text-foreground sm:text-2xl"
+const confirmationDialogDescriptionClass = "text-sm leading-relaxed text-muted-foreground sm:text-base"
+const confirmationDialogFooterClass = "border-border bg-muted sm:items-center"
+const confirmationDialogButtonClass = "h-10 px-4 text-sm sm:text-base"
+const confirmationDialogDetailClass = "rounded-xl border border-border bg-muted p-4 text-sm text-foreground sm:text-base"
+
 interface ConfirmDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -26,14 +33,15 @@ function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !loading && onOpenChange(nextOpen)}>
-      <DialogContent showCloseButton={!loading}>
+      <DialogContent className={confirmationDialogContentClass} showCloseButton={!loading}>
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className={confirmationDialogTitleClass}>{title}</DialogTitle>
+          <DialogDescription className={confirmationDialogDescriptionClass}>{description}</DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className={confirmationDialogFooterClass}>
           <Button
             variant="outline"
+            className={confirmationDialogButtonClass}
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
@@ -41,6 +49,7 @@ function ConfirmDialog({
           </Button>
           <Button
             variant={variant === "destructive" ? "destructive" : "default"}
+            className={confirmationDialogButtonClass}
             onClick={onConfirm}
             disabled={loading}
           >
@@ -53,4 +62,5 @@ function ConfirmDialog({
 }
 
 export { ConfirmDialog }
+export { confirmationDialogButtonClass, confirmationDialogContentClass, confirmationDialogDescriptionClass, confirmationDialogDetailClass, confirmationDialogFooterClass, confirmationDialogTitleClass }
 export type { ConfirmDialogProps }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { confirmationDialogButtonClass, confirmationDialogContentClass, confirmationDialogDescriptionClass, confirmationDialogFooterClass, confirmationDialogTitleClass } from "@/components/ui/confirm-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { Borrow } from "../types/borrow.types";
@@ -12,5 +13,5 @@ export default function RejectBorrowRequestDialog({ borrow, open, processing, on
     if (!nextOpen) setReason("");
     onOpenChange(nextOpen);
   };
-  return <Dialog open={open} onOpenChange={handleOpenChange}><DialogContent showCloseButton={!processing}><DialogHeader><DialogTitle>Reject borrow request?</DialogTitle><DialogDescription>Tell {borrow?.user_name || "the student"} why this request cannot be fulfilled.</DialogDescription></DialogHeader><div><label htmlFor="rejection-reason" className="mb-2 block text-sm font-medium">Rejection reason</label><Textarea id="rejection-reason" value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Enter a clear reason…" disabled={processing} /></div><DialogFooter><Button variant="outline" disabled={processing} onClick={() => handleOpenChange(false)}>Cancel</Button><Button variant="destructive" disabled={processing || !reason.trim()} onClick={() => onConfirm(reason.trim())}>Reject request</Button></DialogFooter></DialogContent></Dialog>;
+  return <Dialog open={open} onOpenChange={handleOpenChange}><DialogContent className={confirmationDialogContentClass} showCloseButton={!processing}><DialogHeader><DialogTitle className={confirmationDialogTitleClass}>Reject borrow request?</DialogTitle><DialogDescription className={confirmationDialogDescriptionClass}>Tell {borrow?.user_name || "the student"} why this request cannot be fulfilled.</DialogDescription></DialogHeader><div><label htmlFor="rejection-reason" className="mb-2 block text-sm font-medium text-foreground sm:text-base">Rejection reason</label><Textarea id="rejection-reason" value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Enter a clear reason…" disabled={processing} /></div><DialogFooter className={confirmationDialogFooterClass}><Button variant="outline" className={confirmationDialogButtonClass} disabled={processing} onClick={() => handleOpenChange(false)}>Cancel</Button><Button variant="destructive" className={confirmationDialogButtonClass} disabled={processing || !reason.trim()} onClick={() => onConfirm(reason.trim())}>Reject request</Button></DialogFooter></DialogContent></Dialog>;
 }

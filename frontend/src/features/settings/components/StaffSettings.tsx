@@ -76,16 +76,16 @@ export function StaffSettings() {
   return (
     <div className="mx-auto max-w-[1180px] space-y-6 px-4 pb-8 md:px-6">
       <header className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Workspace / Settings</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-heading">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your profile and personalize your library workspace.</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-sm">Settings</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-heading sm:text-3xl lg:text-4xl">Settings</h1>
+        <p className="text-sm text-muted-foreground sm:text-base lg:text-lg">Manage your profile and personalize your library workspace.</p>
       </header>
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <form id="profile-settings-form" onSubmit={handleSave} className={`${cardClass} space-y-6`}>
           <div className="flex items-center gap-2">
             <UserRound className="size-5 text-primary" />
-            <div><h2 className="font-semibold">Profile details</h2><p className="text-xs text-muted-foreground">Your staff identity across Booky.</p></div>
+            <div><h2 className="text-lg font-semibold sm:text-xl">Profile details</h2><p className="text-sm text-muted-foreground sm:text-base">Your staff identity across Booky.</p></div>
           </div>
           <div className="flex flex-col gap-5 border-y border-border py-5 sm:flex-row sm:items-center">
             <Avatar className="size-20">
@@ -93,44 +93,44 @@ export function StaffSettings() {
               <AvatarFallback className="text-lg font-semibold text-heading">{initials}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold">{user.username}</p>
-              <p className="text-sm text-muted-foreground">{roleLabel}</p>
+              <p className="truncate text-base font-semibold sm:text-lg">{user.username}</p>
+              <p className="text-sm text-muted-foreground sm:text-base">{roleLabel}</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
+                <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary-hover sm:text-base">
                   <Camera className="size-3.5" /> Change photo
                   <input aria-label="Choose profile photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handlePhoto} />
                 </label>
                 {(avatarPreview || user.avatar_url) && (
-                  <Button type="button" variant="ghost" onClick={handleRemovePhoto} className="text-destructive hover:text-destructive">
+                  <Button type="button" variant="ghost" onClick={handleRemovePhoto} className="text-sm text-destructive hover:text-destructive sm:text-base">
                     <Trash2 className="size-3.5" /> Remove photo
                   </Button>
                 )}
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">JPEG, PNG or WebP. Maximum 2 MB.</p>
-              {avatarError && <p className="mt-1 text-xs text-destructive">{avatarError}</p>}
+              <p className="mt-2 text-xs text-muted-foreground sm:text-sm">JPEG, PNG or WebP. Maximum 2 MB.</p>
+              {avatarError && <p className="mt-1 text-xs text-destructive sm:text-sm">{avatarError}</p>}
             </div>
           </div>
           <div className="space-y-4">
-            <div className="space-y-1.5"><label htmlFor="display-name" className="text-sm font-medium">Display name</label><Input id="display-name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} className="h-10 bg-control" /></div>
-            <div className="space-y-1.5"><label htmlFor="email-address" className="text-sm font-medium">Email address</label><Input id="email-address" value={user.email} disabled className="h-10 bg-control" /><p className="text-xs text-muted-foreground">Contact an administrator if your email address needs to change.</p></div>
+            <div className="space-y-1.5"><label htmlFor="display-name" className="text-sm font-medium sm:text-base">Display name</label><Input id="display-name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} className="h-10 bg-control text-sm sm:text-base" /></div>
+            <div className="space-y-1.5"><label htmlFor="email-address" className="text-sm font-medium sm:text-base">Email address</label><Input id="email-address" value={user.email} disabled className="h-10 bg-control text-sm sm:text-base" /><p className="text-xs text-muted-foreground sm:text-sm">Contact an administrator if your email address needs to change.</p></div>
           </div>
         </form>
 
         <div className="space-y-6">
           <section className={`${cardClass} space-y-5`}>
-            <div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold">Appearance</h2><p className="mt-1 text-xs text-muted-foreground">Choose how Booky looks on this device.</p></div>{theme === "dark" ? <Moon className="size-5 text-primary" /> : <Sun className="size-5 text-primary" />}</div>
+            <div className="flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold sm:text-xl">Appearance</h2><p className="mt-1 text-sm text-muted-foreground sm:text-base">Choose how Booky looks on this device.</p></div>{theme === "dark" ? <Moon className="size-5 text-primary" /> : <Sun className="size-5 text-primary" />}</div>
             <ThemeChoice theme={theme} onChange={setTheme} />
           </section>
           <section className={`${cardClass} space-y-5`}>
-            <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 size-5 text-primary" /><div><h2 className="font-semibold">Password &amp; security</h2><p className="mt-1 text-xs text-muted-foreground">Keep your account protected with a strong password.</p></div></div>
+            <div className="flex items-start gap-2"><ShieldCheck className="mt-0.5 size-5 text-primary" /><div><h2 className="text-lg font-semibold sm:text-xl">Password &amp; security</h2><p className="mt-1 text-sm text-muted-foreground sm:text-base">Keep your account protected with a strong password.</p></div></div>
             <PasswordSettings isGoogleAccount={user.is_google_account} />
           </section>
         </div>
       </div>
 
       <footer className="flex flex-col gap-3 rounded-2xl border border-[var(--glass-border)] bg-card px-5 py-4 shadow-[var(--glass-shadow)] backdrop-blur-[var(--glass-blur)] sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">Profile changes apply across your library workspace. Appearance is saved on this device.</p>
-        <Button type="submit" form="profile-settings-form" className="h-9 px-5" disabled={updateProfile.isPending}>{updateProfile.isPending ? "Saving…" : "Save changes"}</Button>
+        <p className="text-sm text-muted-foreground sm:text-base">Profile changes apply across your library workspace. Appearance is saved on this device.</p>
+        <Button type="submit" form="profile-settings-form" className="h-10 px-5 text-sm sm:text-base" disabled={updateProfile.isPending}>{updateProfile.isPending ? "Saving…" : "Save changes"}</Button>
       </footer>
     </div>
   );

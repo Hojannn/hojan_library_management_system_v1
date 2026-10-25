@@ -40,6 +40,8 @@ describe("StaffSettings", () => {
     render(<StaffSettings />);
 
     expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();
+    expect(screen.getByText("Settings", { selector: "p" })).toBeInTheDocument();
+    expect(screen.queryByText("Workspace / Settings")).not.toBeInTheDocument();
     expect(screen.getByText("Profile details")).toBeInTheDocument();
     expect(screen.getByText("Appearance")).toBeInTheDocument();
     expect(screen.getByText("Password & security")).toBeInTheDocument();
@@ -107,5 +109,22 @@ describe("StaffSettings", () => {
 
     expect(screen.getByText("Password managed by Google")).toBeInTheDocument();
     expect(screen.queryByLabelText("Current password")).not.toBeInTheDocument();
+  });
+
+  it("uses responsive readable typography throughout the settings page", () => {
+    render(<StaffSettings />);
+
+    expect(screen.getByRole("heading", { name: "Settings" })).toHaveClass("text-2xl", "sm:text-3xl", "lg:text-4xl");
+    expect(screen.getByText("Manage your profile and personalize your library workspace.")).toHaveClass("text-sm", "sm:text-base", "lg:text-lg");
+    expect(screen.getByRole("heading", { name: "Profile details" })).toHaveClass("text-lg", "sm:text-xl");
+    expect(screen.getByRole("heading", { name: "Appearance" })).toHaveClass("text-lg", "sm:text-xl");
+    expect(screen.getByRole("heading", { name: "Password & security" })).toHaveClass("text-lg", "sm:text-xl");
+    expect(screen.getByText("Your staff identity across Booky.")).toHaveClass("text-sm", "sm:text-base");
+    expect(screen.getByText("JPEG, PNG or WebP. Maximum 2 MB.")).toHaveClass("text-xs", "sm:text-sm");
+    expect(screen.getByText("Display name")).toHaveClass("text-sm", "sm:text-base");
+    expect(screen.getByLabelText("Display name")).toHaveClass("text-sm", "sm:text-base");
+    expect(screen.getByRole("radio", { name: "Light" }).querySelector("span.text-sm")).toHaveClass("sm:text-base");
+    expect(screen.getByRole("button", { name: "Update password" })).toHaveClass("text-sm", "sm:text-base");
+    expect(screen.getByRole("button", { name: "Save changes" })).toHaveClass("text-sm", "sm:text-base");
   });
 });

@@ -65,8 +65,8 @@ export default function BorrowRequestsPage() {
   return (
     <div className="space-y-7 pb-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workspace / Borrow Requests</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">Borrow Requests</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">Review student requests, reserve available books, and confirm physical pickup before a loan begins.</p></div>
-        <div className="flex items-center gap-2 rounded-full border bg-white/55 px-4 py-2 text-sm text-muted-foreground shadow-sm"><CalendarDays className="size-4" />{new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date())}</div>
+        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:text-sm">Borrow Requests</p><h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Borrow Requests</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">Review student requests, reserve available books, and confirm physical pickup before a loan begins.</p></div>
+        <div className="flex items-center gap-2 rounded-full border border-border/70 bg-card px-4 py-2 text-sm text-muted-foreground shadow-sm sm:text-base"><CalendarDays className="size-4" />{new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date())}</div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-3">
@@ -74,17 +74,17 @@ export default function BorrowRequestsPage() {
           { label: "Pending requests", value: counts.pending, hint: "Awaiting review", icon: Inbox },
           { label: "For pickup", value: counts.forPickup, hint: "Copies reserved", icon: Clock3 },
           { label: "Picked up today", value: counts.pickedUpToday, hint: "Loans started", icon: CheckCircle2 },
-        ].map(({ label, value, hint, icon: Icon }) => <article key={label} className="rounded-3xl border border-white/70 bg-white/55 p-5 shadow-[0_12px_35px_rgba(84,65,43,0.08)] backdrop-blur-xl"><div className="flex items-start justify-between"><div><p className="text-sm font-medium text-muted-foreground">{label}</p><p className="mt-2 text-3xl font-semibold">{value}</p><p className="mt-1 text-xs text-muted-foreground">{hint}</p></div><span className="rounded-2xl bg-primary/10 p-3"><Icon className="size-5 text-primary" /></span></div></article>)}
+        ].map(({ label, value, hint, icon: Icon }) => <article key={label} className="rounded-3xl border border-border/70 bg-card p-5 shadow-[var(--glass-shadow)] backdrop-blur-xl"><div className="flex items-start justify-between"><div><p className="text-sm font-medium text-muted-foreground sm:text-base">{label}</p><p className="mt-2 text-2xl font-semibold sm:text-3xl">{value}</p><p className="mt-1 text-xs text-muted-foreground sm:text-sm">{hint}</p></div><span className="rounded-2xl bg-primary/10 p-3"><Icon className="size-5 text-primary" /></span></div></article>)}
       </section>
 
-      <section className="overflow-hidden rounded-3xl border border-white/70 bg-white/50 shadow-[0_18px_55px_rgba(84,65,43,0.09)] backdrop-blur-xl">
-        <div className="border-b border-white/60 px-5 pt-5">
-          <nav className="flex gap-6" aria-label="Borrow request views">{tabs.map((item) => <Link key={item.value} to={`/borrow-requests/${item.value}`} onClick={() => { setPage(1); setOrder(item.value === "history" ? "newest" : "oldest"); }} className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${activeTab === item.value ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>{item.label}</Link>)}</nav>
+      <section className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-[var(--glass-shadow)] backdrop-blur-xl">
+        <div className="border-b border-border px-5 pt-5">
+          <nav className="flex gap-6" aria-label="Borrow request views">{tabs.map((item) => <Link key={item.value} to={`/borrow-requests/${item.value}`} onClick={() => { setPage(1); setOrder(item.value === "history" ? "newest" : "oldest"); }} className={`border-b-2 pb-3 text-sm font-semibold transition-colors sm:text-base ${activeTab === item.value ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>{item.label}</Link>)}</nav>
         </div>
-        <div className="flex flex-col gap-3 border-b border-white/60 p-5 lg:flex-row lg:items-center">
-          <div className="relative flex-1"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search student, book, or request ID" className="h-10 bg-white/65 pl-9" /></div>
-          <Input aria-label="Request date" type="date" value={date === "all" ? "" : date} onChange={(event) => { setDate(event.target.value || "all"); setPage(1); }} className="h-10 bg-white/65 lg:w-44" />
-          <select aria-label="Request ordering" value={order} onChange={(event) => { setOrder(event.target.value as BorrowRequestOrder); setPage(1); }} className="h-10 rounded-lg border border-input bg-white/65 px-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select>
+        <div className="flex flex-col gap-3 border-b border-border p-5 lg:flex-row lg:items-center">
+          <div className="relative flex-1"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search student, book, or request ID" className="h-10 bg-control pl-9 text-sm sm:text-base md:text-base" /></div>
+          <Input aria-label="Request date" type="date" value={date === "all" ? "" : date} onChange={(event) => { setDate(event.target.value || "all"); setPage(1); }} className="h-10 bg-control text-sm sm:text-base md:text-base lg:w-44" />
+          <select aria-label="Request ordering" value={order} onChange={(event) => { setOrder(event.target.value as BorrowRequestOrder); setPage(1); }} className="h-10 rounded-lg border border-input bg-control px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring sm:text-base"><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select>
         </div>
         {isError ? <div className="flex min-h-64 flex-col items-center justify-center gap-3 p-6 text-center"><p className="font-semibold text-destructive">Could not load borrow requests</p><p className="text-sm text-muted-foreground">{error?.message || "Please try again."}</p><Button variant="outline" onClick={() => refetch()}>Try again</Button></div> : <BorrowRequestsTable rows={rows} tab={activeTab} page={page} onPageChange={setPage} onOpen={openRow} />}
       </section>

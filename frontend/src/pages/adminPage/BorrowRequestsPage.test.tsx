@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import BorrowRequestsPage from "./BorrowRequestsPage";
@@ -35,5 +35,27 @@ describe("BorrowRequestsPage", () => {
     const newer = screen.getByText("New history");
     const older = screen.getByText("Old history");
     expect(newer.compareDocumentPosition(older) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("uses theme-aware surfaces for summary cards and the request workspace", () => {
+    const { container } = render(<MemoryRouter initialEntries={["/borrow-requests/pending"]}><Routes><Route path="/borrow-requests/:tab" element={<BorrowRequestsPage />} /></Routes></MemoryRouter>);
+
+    expect(within(container).getByText("Pending requests").closest("article")).toHaveClass("bg-card", "border-border/70");
+    expect(container.querySelector("section.overflow-hidden")).toHaveClass("bg-card", "border-border/70");
+    expect(within(container).getByPlaceholderText("Search student, book, or request ID")).toHaveClass("bg-control");
+  });
+
+  it("scales page and control typography across screen sizes", () => {
+    const { container } = render(<MemoryRouter initialEntries={["/borrow-requests/pending"]}><Routes><Route path="/borrow-requests/:tab" element={<BorrowRequestsPage />} /></Routes></MemoryRouter>);
+    const view = within(container);
+
+    expect(view.getByText("Borrow Requests", { selector: "p" })).toHaveClass("text-xs", "sm:text-sm");
+    expect(view.queryByText("Workspace / Borrow Requests")).not.toBeInTheDocument();
+    expect(view.getByRole("heading", { name: "Borrow Requests" })).toHaveClass("text-2xl", "sm:text-3xl");
+    expect(view.getByText(/Review student requests/)).toHaveClass("text-sm", "sm:text-base");
+    expect(view.getByText("Pending requests")).toHaveClass("text-sm", "sm:text-base");
+    expect(view.getByText("Awaiting review")).toHaveClass("text-xs", "sm:text-sm");
+    expect(view.getByRole("link", { name: "Pending" })).toHaveClass("text-sm", "sm:text-base");
+    expect(view.getByPlaceholderText("Search student, book, or request ID")).toHaveClass("text-sm", "sm:text-base");
   });
 });

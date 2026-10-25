@@ -1,7 +1,8 @@
-import { BookOpen, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
+import { BookOpen, Inbox } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { formatRequestDate, getBorrowReference, type BorrowRequestTab } from "../lib/borrowRequestView";
 import type { Borrow } from "../types/borrow.types";
 
@@ -54,34 +55,31 @@ export default function BorrowRequestsTable({
   return (
     <>
       <div className="overflow-x-auto">
-        <Table className="min-w-[820px]">
+        <Table className="min-w-[820px] text-sm sm:text-base">
           <TableHeader>
-            <TableRow className="border-white/50 bg-white/35 hover:bg-white/35">
+            <TableRow className="border-border bg-muted/60 hover:bg-muted/60">
               <TableHead>Student</TableHead><TableHead>Book / Request</TableHead><TableHead>Request Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {visible.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell><p className="font-medium">{row.user_name || "Unknown student"}</p><p className="text-xs text-muted-foreground">{row.user_email || "No email available"}</p></TableCell>
+              <TableRow key={row.id} className="border-border/60 bg-card/30 hover:bg-muted/45">
+                <TableCell><p className="font-medium">{row.user_name || "Unknown student"}</p><p className="text-xs text-muted-foreground sm:text-sm">{row.user_email || "No email available"}</p></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     {row.book_image ? <img src={row.book_image} alt="" className="h-12 w-9 rounded object-cover shadow-sm" /> : <span aria-label={`No cover available for ${row.book_title}`} className="flex h-12 w-9 items-center justify-center rounded bg-primary/10"><BookOpen className="size-4 text-primary" /></span>}
-                    <div><p className="max-w-56 truncate font-medium">{row.book_title || "Untitled book"}</p><p className="text-xs text-muted-foreground">{row.author || "Unknown author"} · {getBorrowReference(row)}</p></div>
+                    <div><p className="max-w-56 truncate font-medium">{row.book_title || "Untitled book"}</p><p className="text-xs text-muted-foreground sm:text-sm">{row.author || "Unknown author"} · {getBorrowReference(row)}</p></div>
                   </div>
                 </TableCell>
                 <TableCell>{formatRequestDate(row.created_at)}</TableCell>
-                <TableCell><Badge variant="outline" className="border-primary/15 bg-primary/5 text-foreground">{labels[row.status]}</Badge></TableCell>
-                <TableCell className="text-right"><Button variant="outline" size="sm" onClick={() => onOpen(row)}>{tab === "pickup" ? "Confirm pickup" : "View details"}</Button></TableCell>
+                <TableCell><Badge variant="outline" className="border-primary/15 bg-primary/5 text-xs text-foreground sm:text-sm">{labels[row.status]}</Badge></TableCell>
+                <TableCell className="text-right"><Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => onOpen(row)}>{tab === "pickup" ? "Confirm pickup" : "View details"}</Button></TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between border-t border-white/50 px-5 py-4 text-sm text-muted-foreground">
-        <span>Showing {(safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, rows.length)} of {rows.length}</span>
-        <div className="flex gap-2"><Button variant="outline" size="icon-sm" aria-label="Previous page" disabled={safePage === 1} onClick={() => onPageChange?.(safePage - 1)}><ChevronLeft /></Button><Button variant="outline" size="icon-sm" aria-label="Next page" disabled={safePage === totalPages} onClick={() => onPageChange?.(safePage + 1)}><ChevronRight /></Button></div>
-      </div>
+      <TablePagination page={safePage} pageSize={pageSize} totalItems={rows.length} itemLabel="requests" onPageChange={(nextPage) => onPageChange?.(nextPage)} />
     </>
   );
 }

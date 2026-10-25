@@ -103,46 +103,46 @@ const AdminBorrowsPage = () => {
   ];
 
   return (
-    <div className="mx-auto min-h-[calc(100vh-4rem)] max-w-[1180px] space-y-6 pb-4">
+    <div className="w-full space-y-7 pb-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div><p className="booky-eyebrow">Workspace / Loans &amp; Returns</p><h1 className="booky-heading mt-3 text-3xl">Loans &amp; Returns</h1><p className="mt-2 text-sm text-muted-foreground">Track borrowed books, follow up on due dates, and record returns.</p></div>
-        <time className="text-xs text-muted-foreground">{new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "2-digit", year: "numeric" }).format(today)}</time>
+        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:text-sm">Loans &amp; Returns</p><h1 className="booky-heading mt-3 text-2xl sm:text-3xl">Loans &amp; Returns</h1><p className="mt-2 text-sm text-muted-foreground sm:text-base">Track borrowed books, follow up on due dates, and record returns.</p></div>
+        <time className="text-xs text-muted-foreground sm:text-sm">{new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "2-digit", year: "numeric" }).format(today)}</time>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Loan summary">
+      <section className="grid w-full gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Loan summary">
         {summary.map((item) => (
-          <article key={item.label} className={cn("min-h-28 rounded-2xl border border-white/55 bg-card p-5", item.featured && "bg-primary/90")}>
-            <p className="text-xs font-bold text-muted-foreground">{item.label}</p>
-            <strong data-testid={item.testId} className={cn("mt-1 block text-3xl text-heading", item.label === "Overdue" && "text-danger")}>{countLabel(item.value)}</strong>
-            <p className="mt-1 text-[11px] text-muted-foreground">{item.hint}</p>
+          <article key={item.label} className={cn("min-h-28 w-full rounded-3xl border p-5 shadow-[var(--glass-shadow)]", item.featured ? "border-primary/40 bg-primary/90 text-primary-foreground" : "border-border/70 bg-card")}>
+            <p className={cn("text-xs font-bold sm:text-sm", item.featured ? "text-primary-foreground/75" : "text-muted-foreground")}>{item.label}</p>
+            <strong data-testid={item.testId} className={cn("mt-1 block text-2xl text-heading sm:text-3xl", item.featured && "text-primary-foreground", item.label === "Overdue" && "text-danger")}>{countLabel(item.value)}</strong>
+            <p className={cn("mt-1 text-xs sm:text-sm", item.featured ? "text-primary-foreground/75" : "text-muted-foreground")}>{item.hint}</p>
           </article>
         ))}
       </section>
 
-      <section className="booky-glass flex min-h-[570px] flex-col p-4 sm:p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-2">
-            <button type="button" onClick={() => switchMode("active")} className={cn("min-w-36 rounded-lg bg-muted px-4 py-3 text-[11px] font-bold text-muted-foreground", mode === "active" && "rounded-full bg-primary text-primary-foreground")}>Active Loans&nbsp; {activeLoans.length}</button>
-            <button type="button" onClick={() => switchMode("history")} className={cn("min-w-36 rounded-lg bg-muted px-4 py-3 text-[11px] font-bold text-muted-foreground", mode === "history" && "rounded-full bg-primary text-primary-foreground")}>Return History&nbsp; {returnedLoans.length}</button>
+      <section className="flex min-h-[570px] w-full flex-col overflow-hidden rounded-3xl border border-border/70 bg-card shadow-[var(--glass-shadow)] backdrop-blur-xl">
+        <div className="flex flex-col gap-3 border-b border-border px-5 pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-6">
+            <button type="button" onClick={() => switchMode("active")} className={cn("border-b-2 border-transparent pb-3 text-xs font-bold text-muted-foreground transition-colors sm:text-sm", mode === "active" && "border-primary text-foreground")}>Active Loans&nbsp; {activeLoans.length}</button>
+            <button type="button" onClick={() => switchMode("history")} className={cn("border-b-2 border-transparent pb-3 text-xs font-bold text-muted-foreground transition-colors sm:text-sm", mode === "history" && "border-primary text-foreground")}>Return History&nbsp; {returnedLoans.length}</button>
           </div>
-          <p className="text-[11px] text-muted-foreground">{mode === "active" ? "Overdue loans appear first" : "Most recent returns first"}</p>
+          <p className="pb-3 text-xs text-muted-foreground sm:text-sm">{mode === "active" ? "Overdue loans appear first" : "Most recent returns first"}</p>
         </div>
 
-        <div className="my-4 grid gap-3 md:grid-cols-[minmax(240px,1fr)_180px_150px_190px]">
-          <label className="relative"><span className="sr-only">Search loans</span><Search className="absolute left-3 top-3.5 size-4 text-muted-foreground" /><Input type="search" className="h-11 border-0 bg-white/45 pl-10 text-xs" placeholder="Search student, book title, or loan ID" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
+        <div className="grid gap-3 border-b border-border p-5 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_180px_150px_190px]">
+          <label className="relative"><span className="sr-only">Search loans</span><Search className="absolute left-3 top-3.5 size-4 text-muted-foreground" /><Input type="search" className="h-11 border-0 bg-control pl-10 text-sm sm:text-base md:text-base" placeholder="Search student, book title, or loan ID" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
           {mode === "active" ? (
-            <select aria-label="Loan status" className="booky-input text-xs font-semibold" value={activeFilter} onChange={(event) => setActiveFilter(event.target.value as ActiveLoanFilter)}><option value="all">All active loans</option><option value="overdue">Overdue</option><option value="due-today">Due today</option><option value="borrowed">Borrowed</option><option value="return-requested">Return requested</option></select>
+            <select aria-label="Loan status" className="booky-input text-sm font-semibold sm:text-base" value={activeFilter} onChange={(event) => setActiveFilter(event.target.value as ActiveLoanFilter)}><option value="all">All active loans</option><option value="overdue">Overdue</option><option value="due-today">Due today</option><option value="borrowed">Borrowed</option><option value="return-requested">Return requested</option></select>
           ) : (
-            <select aria-label="Return outcome" className="booky-input text-xs font-semibold" value={outcomeFilter} onChange={(event) => setOutcomeFilter(event.target.value as ReturnOutcomeFilter)}><option value="all">All returns</option><option value="on-time">On time</option><option value="late">Returned late</option></select>
+            <select aria-label="Return outcome" className="booky-input text-sm font-semibold sm:text-base" value={outcomeFilter} onChange={(event) => setOutcomeFilter(event.target.value as ReturnOutcomeFilter)}><option value="all">All returns</option><option value="on-time">On time</option><option value="late">Returned late</option></select>
           )}
-          <select aria-label="Date filter" className="booky-input text-xs font-semibold" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}><option value="all">{mode === "active" ? "Due date" : "Return date"}</option><option value="today">Today</option>{mode === "active" && <option value="overdue">Overdue</option>}</select>
-          <select aria-label="Sort loans" className="booky-input text-xs font-semibold" value={sort} onChange={(event) => setSort(event.target.value as LoanSort)}>{mode === "active" ? <><option value="due-asc">Due date: earliest</option><option value="due-desc">Due date: latest</option></> : <><option value="returned-desc">Newest first</option><option value="returned-asc">Oldest first</option></>}</select>
+          <select aria-label="Date filter" className="booky-input text-sm font-semibold sm:text-base" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}><option value="all">{mode === "active" ? "Due date" : "Return date"}</option><option value="today">Today</option>{mode === "active" && <option value="overdue">Overdue</option>}</select>
+          <select aria-label="Sort loans" className="booky-input text-sm font-semibold sm:text-base" value={sort} onChange={(event) => setSort(event.target.value as LoanSort)}>{mode === "active" ? <><option value="due-asc">Due date: earliest</option><option value="due-desc">Due date: latest</option></> : <><option value="returned-desc">Newest first</option><option value="returned-asc">Oldest first</option></>}</select>
         </div>
 
         <AdminBorrowsTable borrows={visibleLoans} mode={mode} today={today} onViewDetails={setDetailsBorrow} onRecordReturn={beginReturn} isProcessing={returnMutation.isPending} processingId={(returnMutation.variables as string | undefined) ?? null} />
       </section>
 
-      <p className="text-xs text-muted-foreground">{mode === "active" ? "Record a return only after receiving the physical book from the student." : "Returned books remain in the history for your records."}</p>
+      <p className="text-xs text-muted-foreground sm:text-sm">{mode === "active" ? "Record a return only after receiving the physical book from the student." : "Returned books remain in the history for your records."}</p>
 
       <LoanDetailsDialog borrow={detailsBorrow} open={!!detailsBorrow} today={today} onOpenChange={(open) => !open && setDetailsBorrow(null)} onRecordReturn={beginReturn} />
       <RecordReturnDialog borrow={returnBorrow} open={!!returnBorrow} today={today} isPending={returnMutation.isPending} onOpenChange={(open) => !open && setReturnBorrow(null)} onConfirm={confirmReturn} />

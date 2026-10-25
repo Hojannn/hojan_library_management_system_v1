@@ -36,7 +36,7 @@ export function ThemeChoice({ theme, onChange }: ThemeChoiceProps) {
                 <div className={`col-span-2 h-10 rounded-md ${option === "dark" ? "bg-white/8" : "bg-white"}`} />
               </div>
             </div>
-            <span className="text-sm font-semibold capitalize">{option}</span>
+            <span className="text-sm font-semibold capitalize sm:text-base">{option}</span>
             {selected && (
               <span className="absolute right-3 top-3 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground">
                 <Check className="size-3" />
