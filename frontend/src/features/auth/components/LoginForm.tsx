@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { EyeOff } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@base-ui/react/input";
@@ -64,19 +64,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-[22px]">
 
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs font-medium text-foreground">
+        <div className="space-y-[12px]">
+          <Label htmlFor="email" className="text-xs font-bold text-foreground">
             Email address
           </Label>
           <div className="relative flex items-center">
-            <Mail className="w-4 h-4 text-muted-foreground absolute left-3 pointer-events-none" />
             <Input
               id="email"
               type="email"
-              placeholder="student@gmail.com"
-              className="w-full h-10 pl-9 pr-3 py-2 text-base bg-card border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors shadow-none"
+              autoComplete="email"
+              placeholder="you@example.com"
+              className="w-full h-[52px] px-[15px] py-2 text-sm bg-card/45 border border-card/55 rounded-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors shadow-none"
               {...register("email")}
             />
           </div>
@@ -87,17 +87,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-xs font-medium text-foreground">
+        <div className="space-y-[12px]">
+          <Label htmlFor="password" className="text-xs font-bold text-foreground">
             Password
           </Label>
           <div className="relative flex items-center">
-            <Lock className="w-4 h-4 text-muted-foreground absolute left-3 pointer-events-none" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••••••"
-              className="w-full h-10 pl-9 pr-10 py-2 text-base bg-card border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors shadow-none"
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              className="w-full h-[52px] pl-[15px] pr-12 py-2 text-base bg-card/45 border border-card/55 rounded-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors shadow-none"
               {...register("password")}
             />
             <button
@@ -109,7 +109,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
               {showPassword ? (
                 <EyeOff className="w-4 h-4" />
               ) : (
-                <Eye className="w-4 h-4" />
+                <img src="/images/login/show-password.svg" alt="" width="24" height="24" />
               )}
             </button>
           </div>
@@ -123,7 +123,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-10 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 mt-2 shadow-sm"
+          className="w-full h-[52px] bg-primary hover:bg-primary-hover text-primary-foreground rounded-[20px] text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 mt-[6px] shadow-none"
         >
           {isSubmitting ? (
             "Signing in..."

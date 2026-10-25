@@ -1,0 +1,97 @@
+﻿.booky { --booky-ink:#2b2c28; --booky-muted:#79766d; --booky-brown:#80664b; --booky-gold:#d6ac56; min-height:100vh; background:#e8e7e2; color:var(--booky-ink); font-family:Inter,sans-serif; letter-spacing:0; }
+.booky button { cursor:pointer; }
+.booky :is(button,a,input,select):focus-visible { outline:2px solid #80664b; outline-offset:4px; }
+.booky button:disabled { cursor:default; opacity:.4; }
+.booky-header { height:88px; padding:0 32px; display:flex; align-items:center; gap:32px; border:1px solid #ffffffcc; background:#ffffff38; box-shadow:0 8px 24px -6px #403b2e08; }
+.booky-brand { display:flex; align-items:center; gap:12px; font-size:24px; font-weight:700; flex:1; }
+.booky-mark { display:grid; place-items:center; width:40px; height:40px; background:var(--booky-gold); border-radius:11px; }
+.booky-nav { display:flex; align-self:stretch; align-items:stretch; gap:48px; margin-right:auto; }
+.booky-nav > * { display:flex; align-items:center; position:relative; font-size:14px; white-space:nowrap; }
+.booky-nav [aria-current] { color:var(--booky-brown); font-weight:700; }
+.booky-nav [aria-current]::after { content:""; position:absolute; height:3px; bottom:16px; left:0; right:0; border-radius:1px; background:#a77e35; }
+.booky-account { display:flex; align-items:center; gap:32px; margin-left:auto; }
+.booky-notifications { padding:8px; }
+.booky-profile { display:flex; align-items:center; gap:12px; }
+.booky-avatar { display:grid; place-items:center; width:40px; height:40px; flex-shrink:0; overflow:hidden; border-radius:50%; background:#f2db9c; font-size:12px; font-weight:700; }
+.booky-avatar img { width:100%; height:100%; object-fit:cover; }
+.booky-identity { display:flex; flex-direction:column; min-width:136px; max-width:180px; }
+.booky-identity strong { font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.booky-identity > span { font-size:11px; text-transform:capitalize; color:var(--booky-muted); }
+.booky-content { max-width:1440px; margin:0 auto; padding:24px 32px 0; }
+.booky-banner { display:flex; justify-content:space-between; align-items:center; height:200px; border:1px solid #ffffffa6; border-radius:20px; background:#e9ddc5; padding:24px 48px 24px 40px; overflow:hidden; }
+.booky-eyebrow { font-size:10px; font-weight:700; color:var(--booky-brown); margin-bottom:10px; }
+.booky-banner h1 { font-size:34px; line-height:1.2; font-weight:700; color:#3c352c; margin-bottom:10px; }
+.booky-banner-copy { max-width:420px; font-size:14px; line-height:20px; color:var(--booky-muted); }
+.booky-banner > img { flex-shrink:0; }
+.booky-search { display:flex; align-items:center; gap:16px; height:64px; padding:11px 18px; border:1px solid #ffffffb3; border-radius:12px; background:#ffffff4d; margin:16px 0 24px; }
+.booky-search input { flex:1; width:0; font-size:13px; background:transparent; }
+.booky-search input::placeholder { color:var(--booky-muted); }
+.booky-search .booky-search-button { height:40px; min-width:92px; padding:0 22px; border-radius:24px; font-size:13px; font-weight:700; background:var(--booky-gold); color:var(--booky-ink); }
+.booky-search .booky-search-button:hover { background:#cba04a; }
+.booky-grid { display:grid; grid-template-columns:238px minmax(0,1fr); gap:32px; }
+.booky-filters,.booky-card { border:1px solid #ffffffcc; background:#ffffff5c; box-shadow:0 8px 24px -6px #403b2e14,inset 0 1px 1px #ffffffd9; backdrop-filter:blur(14px); }
+.booky-filters { min-height:680px; border-radius:16px; padding:20px; }
+.booky-filter-heading { display:flex; justify-content:space-between; align-items:center; color:var(--booky-brown); margin-bottom:32px; }
+.booky-filter-heading h2 { font-size:18px; font-weight:700; }
+.booky-filter-heading button { font-size:11px; }
+.booky-field-label,.booky-availability legend,.booky-genres h3 { display:block; font-size:10px; font-weight:700; color:var(--booky-brown); }
+.booky-filters select { width:100%; height:44px; padding:0 13px; border:1px solid #ffffffb3; background:#ffffff4d; border-radius:8px; font-size:13px; margin-top:18px; }
+.booky-availability { margin-top:34px; }
+.booky-availability label { display:flex; gap:12px; align-items:center; font-size:12px; margin-top:18px; }
+.booky-availability input { accent-color:#292b26; width:15px; height:15px; }
+.booky-genres { margin-top:48px; }
+.booky-genres h3 { margin-bottom:12px; }
+.booky-genres button { display:flex; justify-content:space-between; align-items:center; gap:8px; width:calc(100% + 20px); min-height:36px; padding:8px 12px; margin:0 -10px 6px; text-align:left; font-size:12px; border-radius:8px; color:var(--booky-muted); }
+.booky-genres button > span:last-child { font-size:11px; }
+.booky-genres button.is-active { background:#e4d0a6; color:#51412f; }
+.booky-genres button.is-active > span:first-child { font-weight:700; }
+.booky-help { margin-top:22px; border-radius:16px; padding:20px 18px; background:#e9ddc5; min-height:155px; }
+.booky-help h3 { font-size:13px; font-weight:700; }
+.booky-help p { font-size:12px; color:var(--booky-muted); margin-top:12px; line-height:16px; }
+.booky-help button { font-size:12px; font-weight:700; color:var(--booky-brown); margin-top:26px; }
+.booky-results { min-width:0; }
+.booky-section-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:24px; }
+.booky-section-heading h2 { font-size:22px; line-height:27px; font-weight:700; color:#655039; }
+.booky-section-heading p { font-size:12px; color:var(--booky-muted); margin-top:6px; }
+.booky-section-heading button { font-size:12px; font-weight:700; color:var(--booky-brown); margin-top:9px; white-space:nowrap; }
+.booky-cards { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px; }
+.booky-card { display:flex; flex-direction:column; gap:8px; padding:12px; min-height:350px; border-radius:14px; transition:box-shadow .2s,transform .2s; }
+.booky-card:hover { transform:translateY(-3px); box-shadow:0 12px 28px -6px #403b2e26; }
+.booky-cover { height:204px; border-radius:6px; overflow:hidden; background:#e9ddc5; }
+.booky-cover > img { width:100%; height:100%; object-fit:cover; }
+.booky-no-cover { height:100%; display:flex; flex-direction:column; gap:16px; align-items:center; justify-content:center; text-align:center; padding:16px; color:var(--booky-brown); font-weight:700; }
+.booky-card h3 { font-size:13px; font-weight:700; line-height:17px; min-height:34px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.booky-author { font-size:10px; color:var(--booky-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.booky-rating { display:flex; gap:6px; flex-wrap:wrap; font-size:10px; color:var(--booky-muted); }
+.booky-available { color:#536b50; }
+.booky-unavailable { color:#9a654c; }
+.booky-details { font-size:11px; color:var(--booky-brown); font-weight:700; }
+.booky-card-popular { min-height:285px; }
+.booky-card-popular .booky-cover { height:174px; }
+.booky-results > section + section { margin-top:30px; scroll-margin-top:24px; }
+.booky-chip { display:block; max-width:50%; padding:10px 15px; background:#eae7da9e; border-radius:20px; font-size:10px; color:var(--booky-muted); }
+.booky-pagination { margin-top:38px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.booky-pagination p { font-size:12px; color:var(--booky-muted); }
+.booky-pagination nav { display:flex; gap:8px; align-items:center; }
+.booky-pagination button { min-width:36px; height:36px; border-radius:8px; padding:0 10px; font-size:12px; }
+.booky-pagination [aria-current] { background:var(--booky-gold); font-weight:700; }
+.booky-empty { padding:40px 20px; text-align:center; color:var(--booky-muted); font-size:13px; }
+.booky-empty button { margin-top:16px; }
+.booky-footer { max-width:1376px; margin:36px auto 0; padding:20px 0 28px; border-top:1px solid #dad7c999; display:flex; justify-content:space-between; gap:16px; font-size:11px; color:var(--booky-muted); width:calc(100% - 64px); }
+.booky-mobile-filters { display:none; }
+@media(min-width:1400px) { .booky-header { padding-left:max(32px,calc((100vw - 1376px)/2)); padding-right:max(32px,calc((100vw - 1376px)/2)); } }
+@media(max-width:1100px) { .booky-nav { gap:24px; } .booky-account { gap:14px; } .booky-identity { min-width:0; max-width:110px; } .booky-grid { grid-template-columns:210px minmax(0,1fr); gap:24px; } .booky-cards { gap:14px; grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:760px) {
+  .booky-header { height:auto; flex-wrap:wrap; gap:0; padding:16px 20px 0; }
+  .booky-brand { font-size:22px; } .booky-identity { display:none; } .booky-account { gap:12px; }
+  .booky-nav { order:3; flex:1 0 100%; justify-content:space-between; gap:16px; height:58px; } .booky-nav > * { font-size:12px; } .booky-nav [aria-current]::after { bottom:0; }
+  .booky-content { padding:20px 16px 0; } .booky-banner { height:auto; min-height:180px; padding:24px; gap:12px; } .booky-banner h1 { font-size:28px; } .booky-banner-copy { font-size:12px; } .booky-banner > img { width:160px; height:auto; }
+  .booky-search { gap:10px; padding:10px 12px; } .booky-search input { font-size:12px; } .booky-search .booky-search-button { min-width:72px; padding:0 14px; }
+  .booky-grid { grid-template-columns:1fr; gap:24px; } .booky-mobile-filters { display:flex; justify-content:space-between; width:100%; padding:14px 18px; background:#ffffff5c; border:1px solid #ffffffcc; border-radius:12px; font-size:13px; color:var(--booky-brown); font-weight:700; }
+  .booky-filters { display:none; min-height:0; margin-top:12px; } .booky-filters.is-open { display:block; } .booky-help { margin-top:12px; min-height:0; } .booky-help button { margin-top:12px; }
+  .booky-section-heading h2 { font-size:20px; } .booky-section-heading p { font-size:11px; } .booky-chip { padding:8px 12px; } .booky-cards { gap:12px; } .booky-card { padding:10px; }
+  .booky-pagination { flex-wrap:wrap; margin-top:24px; } .booky-footer { width:calc(100% - 32px); flex-wrap:wrap; }
+}
+@media(max-width:480px) { .booky-banner > img { display:none; } .booky-chip { display:none; } .booky-cover { height:180px; } .booky-card { min-height:330px; } .booky-card-popular { min-height:285px; } .booky-card-popular .booky-cover { height:150px; } }
+@media(prefers-reduced-motion:reduce) { .booky-card { transition:none; } .booky-card:hover { transform:none; } }
+@media(min-width:1101px) { .booky-brand { flex:0 0 280px; } }

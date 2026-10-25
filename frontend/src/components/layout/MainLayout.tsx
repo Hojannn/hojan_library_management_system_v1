@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import CatalogLayout from "./CatalogLayout";
 import { Sidebar } from "./Sidebar";
 import { MobileHeader } from "./MobileHeader";
 import { Footer } from "./Footer";
@@ -8,9 +9,11 @@ import { useAuth } from "@/hooks/useAuth";
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const { user } = useAuth();
-  const location = useLocation();
-  const isDashboard = location.pathname === "/dashboard";
+  const { pathname } = useLocation();
+  const isDashboard = pathname === "/dashboard";
   const isStaff = user?.role === "admin" || user?.role === "librarian";
+
+  if (/^\/books(?:\/[^/]+)?\/?$/.test(pathname) || /^\/(?:my-borrows|about)\/?$/.test(pathname)) return <CatalogLayout />;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">

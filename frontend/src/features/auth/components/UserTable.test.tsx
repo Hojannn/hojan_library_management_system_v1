@@ -80,7 +80,7 @@ describe("admin users workspace", () => {
     const user = userEvent.setup();
     render(<UserTable />);
     await user.click(screen.getByRole("button", { name: "View Bianca Student details" }));
-    const profileDialog = screen.getByRole("heading", { name: "User profile" }).closest("[role=dialog]");
+    const profileDialog = screen.getByRole("heading", { name: "User profile" }).closest<HTMLElement>("[role=dialog]");
     expect(profileDialog).not.toBeNull();
     expect(profileDialog).toHaveClass("!bg-popover", "!text-popover-foreground", "!backdrop-blur-none");
     expect(profileDialog).not.toHaveClass("!bg-black", "!text-white");

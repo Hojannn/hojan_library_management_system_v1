@@ -1,251 +1,67 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useBooks } from "@/hooks/useBooks";
-import { LoadingState } from "@/components/ui/loading-spinner";
-import {
-  ArrowRight,
-  Search,
-  BookOpen,
-} from "lucide-react";
-import BookCard from "@/features/books/components/books/BookCard";
-import BookFilters from "@/features/books/components/books/BookFilters";
-import { Button } from "@/components/ui/button";
-import BookPagination from "@/features/books/components/books/BookCatalogPagination";
 import { useCategories } from "@/hooks/useCategories";
+import { LoadingState } from "@/components/ui/loading-spinner";
+import { Button } from "@/components/ui/button";
+import BookCard from "@/features/books/components/books/BookCard";
 
-
-const ITEMS_PER_PAGE = 8;
-
-const BookCatalogPage = () => {
-  const { data: books = [], isLoading, isError, error } = useBooks();
-  const { data: genres } = useCategories();
-
-  // Filter & Search States
-  const [searchInput, setSearchInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSort, setSelectedSort] = useState("A-Z");
+const PAGE_SIZE = 8;
+export default function BookCatalogPage() {
+  const { data: books = [], isLoading, isError, refetch } = useBooks();
+  const { data: categories = [] } = useCategories();
+  const [input, setInput] = useState("");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("A-Z");
   const [availability, setAvailability] = useState("all");
-  const [selectedGenre, setSelectedGenre] = useState("All");
-
-
+  const [genre, setGenre] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-
-  const applySearch = () => {
-    setSearchQuery(searchInput);
-    setCurrentPage(1);
-  };
-
-  const scrollToAllBooks = () => {
-    document.getElementById("all-books")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
-
-  // Filter Logic
-  const filteredBooks = books.filter((book) => {
-    const matchesSearch =
-      book.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.category_name?.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesGenre =
-      selectedGenre === "All" ||
-      book.category_name?.toLowerCase() === selectedGenre.toLowerCase();
-
-    const matchesAvailability =
-      availability === "all" ||
-      (availability === "available" && (book.available_copies ?? 0) > 0) ||
-      (availability === "reserved" && (book.available_copies ?? 0) === 0);
-
-    return matchesSearch && matchesGenre && matchesAvailability;
-  });
-
-  // Sorting Logic
-  const sortedBooks = [...filteredBooks].sort((a, b) => {
-    if (selectedSort === "A-Z") return (a.title || "").localeCompare(b.title || "");
-    if (selectedSort === "Z-A") return (b.title || "").localeCompare(a.title || "");
-    return 0;
-  });
-
-  // Popular Books 
-  const popularBooks = [...sortedBooks]
-    .sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0))
-    .slice(0, 5);
-
-  // Pagination Calculations for All Books
-  const totalPages = Math.ceil(sortedBooks.length / ITEMS_PER_PAGE) || 1;
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedBooks = sortedBooks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const handleClearFilters = () => {
-    setSearchInput("");
-    setSearchQuery("");
-    setSelectedSort("A-Z");
-    setAvailability("all");
-    setSelectedGenre("All");
-    setCurrentPage(1);
-  };
-
-  if (isLoading) {
-    return <LoadingState containerClassName="h-96" label="Loading catalog" />;
-  }
-
-  if (isError) {
-    return (
-      <div className="m-6 p-4 border border-destructive/20 bg-destructive/10 text-destructive rounded-xl text-sm">
-        Error loading catalog: {error ? (error as Error).message : "Could not load catalog"}
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12 px-0 sm:px-0">
-      {/* Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-black text-white p-8 md:px-5 flex items-center justify-between shadow-md">
-         {/* Background Image */}
-        <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: "url('/images/lib_banner.webp')",}}/>
-        {/* Dark Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#241711]/95 via-[#493022]/80 to-[#7A5138]/20" />
-        <div className="space-y-3 z-10 max-w-lg">
-          <span className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-semibold tracking-wider uppercase text-purple-100 border border-white/10">
-            CURATED SELECTION
-          </span>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight uppercase">
-            MOST READ BOOKS THESE MONTHS
-          </h1>
-          <p className="text-xs md:text-sm text-purple-100/80 leading-relaxed">
-            View trending books in this month and explore recommended reads curated by librarians.
-          </p>
-          <div className="pt-2">
-            <Button
-              size="sm"
-              onClick={scrollToAllBooks}
-              className="bg-primary hover:bg-primary rounded-full px-6 py-5 text-xs font-bold gap-2 shadow-sm transition-all hover:gap-3 cursor-pointer"
-            >
-              VIEW NOW <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtered = books.filter(book =>
+    [book.title, book.author, book.isbn, book.category_name].some(value => value?.toLowerCase().includes(query.trim().toLowerCase())) &&
+    (genre === "All" || book.category_name === genre) && (availability === "all" || book.available_copies > 0)
+  ).sort((a, b) => sort === "Z-A" ? b.title.localeCompare(a.title) : a.title.localeCompare(b.title));
+  const popular = [...books].sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0)).slice(0, 4);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const start = (page - 1) * PAGE_SIZE;
+  const visible = filtered.slice(start, start + PAGE_SIZE);
+  const genres = [...new Set([...categories.map(c => c.name), ...books.map(b => b.category_name).filter((name): name is string => !!name)])];
+  const firstPage = Math.max(1, Math.min(page - 1, totalPages - 2));
+  const pages = Array.from({ length: Math.min(3, totalPages) }, (_, i) => firstPage + i);
+  function reset() { setInput(""); setQuery(""); setSort("A-Z"); setAvailability("all"); setGenre("All"); setCurrentPage(1); }
+  return <>
+    <section className="booky-banner" aria-labelledby="catalog-heading">
+      <div><p className="booky-eyebrow">YOUR CAMPUS COLLECTION</p><h1 id="catalog-heading">Find your next chapter.</h1><p className="booky-banner-copy">Discover books for your studies, your interests, and everything in between.</p></div>
+      <img src="/catalog/reading.svg" alt="An open book above a stack of books beside a plant" />
+    </section>
+    <form role="search" className="booky-search" onSubmit={e => { e.preventDefault(); setQuery(input); setCurrentPage(1); }}>
+      <img src="/catalog/search.svg" alt="" /><input type="search" aria-label="Search title, author, or ISBN" placeholder="Search title, author, or ISBN" value={input} onChange={e => setInput(e.target.value)} /><Button type="submit" className="booky-search-button">Search</Button>
+    </form>
+    <div className="booky-grid">
+      <aside className="booky-sidebar">
+        <button type="button" className="booky-mobile-filters" aria-expanded={filtersOpen} aria-controls="catalog-filters" onClick={() => setFiltersOpen(!filtersOpen)}>{filtersOpen ? "Hide filters −" : "Filters & sorting +"}</button>
+        <div id="catalog-filters" className={`booky-filters ${filtersOpen ? "is-open" : ""}`}>
+          <div className="booky-filter-heading"><h2>Filters</h2><button type="button" onClick={reset}>Reset</button></div>
+          <label className="booky-field-label" htmlFor="catalog-sort">SORT BY</label>
+          <select id="catalog-sort" value={sort} onChange={e => { setSort(e.target.value); setCurrentPage(1); }}><option value="A-Z">Title: A–Z</option><option value="Z-A">Title: Z–A</option></select>
+          <fieldset className="booky-availability"><legend>AVAILABILITY</legend>{[["all", "All books"], ["available", "Available now"]].map(([value, label]) => <label key={value}><input type="radio" name="availability" checked={availability === value} onChange={() => { setAvailability(value); setCurrentPage(1); }} />{label}</label>)}</fieldset>
+          <div className="booky-genres"><h3>GENRES</h3>{["All", ...genres].map(name => <button key={name} type="button" aria-pressed={genre === name} className={genre === name ? "is-active" : ""} onClick={() => { setGenre(name); setCurrentPage(1); }}><span>{name === "All" ? "All genres" : name}</span><span>{name === "All" ? books.length : books.filter(b => b.category_name === name).length}</span></button>)}</div>
         </div>
-      </div>
-
-      {/* Search Input */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs">
-        <div className="relative flex-1 flex items-center">
-          <Search className="absolute left-4 w-4 h-4" />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") applySearch();
-            }}
-            placeholder="Search books"
-            className="w-full bg-transparent pl-11 pr-4 py-2.5 text-xs sm:text-sm text-foreground focus:outline-none placeholder:text-slate-400"
-          />
-        </div>
-        <Button 
-          onClick={applySearch}
-          className="text-white rounded-xl px-6 py-2.5 text-xs font-semibold gap-2 shadow-xs shrink-0 cursor-pointer"
-        >
-          <Search className="w-3.5 h-3.5" />
-          <p className="hidden md:block">Search</p>
-        </Button>
-      </div>
-
-      {/* Main Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-2">
-        <div className="lg:col-span-3">
-          <BookFilters
-            selectedSort={selectedSort}
-            onSortChange={setSelectedSort}
-            availability={availability}
-            onAvailabilityChange={(val) => {
-              setAvailability(val);
-              setCurrentPage(1);
-            }}
-            selectedGenre={selectedGenre}
-            onGenreChange={(genre) => {
-              setSelectedGenre(genre);
-              setCurrentPage(1);
-            }}
-            onClearFilters={handleClearFilters}
-            genres={["All", ...(genres?.map(genre => genre.name) ?? [])]}
-          />
-        </div>
-
-        <main className="lg:col-span-9 space-y-10">
-          {/* Popular Section */}
-          <section className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
-                  Popular
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Most requested titles this week
-                </p>
-              </div>
-            </div>
-            {popularBooks.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-6 text-center">
-                No popular books available matching filters.
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {popularBooks.map((book) => (
-                  <BookCard key={book.id} book={book} />
-                ))}
-              </div>
-            )}
+        <div className="booky-help"><h3>A little help finding a book?</h3><p>Visit the library desk for recommendations and support.</p><button type="button">Ask your librarian&nbsp; ↗</button></div>
+      </aside>
+      <div className="booky-results">
+        {isLoading ? <LoadingState containerClassName="h-96" label="Loading catalog" /> : isError ? <div className="booky-empty" role="alert"><h2>We couldn’t load the catalog.</h2><p>Please try again in a moment.</p><Button type="button" onClick={() => void refetch()}>Try again</Button></div> : <>
+          <section aria-labelledby="popular-heading">
+            <div className="booky-section-heading"><div><h2 id="popular-heading">Popular this week</h2><p>A few campus favorites to get you started.</p></div><button type="button" onClick={() => document.getElementById("all-books")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Explore all&nbsp; →</button></div>
+            {popular.length ? <div className="booky-cards">{popular.map(book => <BookCard key={book.id} book={book} variant="popular" />)}</div> : <p className="booky-empty">New campus favorites will appear here.</p>}
           </section>
-
-          {/* All Books Section with Pagination */}
-          <section className="space-y-4" id="all-books">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
-                  All Books
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Browse general catalog titles across all genres
-                </p>
-              </div>
-            </div>
-
-            {paginatedBooks.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-6 text-center">
-                No books found matching your criteria.
-              </p>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {paginatedBooks.map((book) => (
-                    <BookCard key={book.id} book={book} />
-                  ))}
-                </div>
-
-                {/* Clean Shadcn Pagination Component */}
-                <BookPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  startIndex={startIndex}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  totalItems={sortedBooks.length}
-                />
-              </>
-            )}
+          <section id="all-books" aria-labelledby="browse-heading">
+            <div className="booky-section-heading"><div><h2 id="browse-heading">Browse all books</h2><p aria-live="polite">Showing {visible.length} of {filtered.length} titles</p></div><span className="booky-chip">{genre === "All" ? "All genres" : genre}&nbsp; · &nbsp;{availability === "all" ? "All availability" : "Available now"}</span></div>
+            {visible.length ? <div className="booky-cards">{visible.map(book => <BookCard key={book.id} book={book} variant="catalog" />)}</div> : <div className="booky-empty"><h3>{books.length ? "No books match your search." : "The library catalog is empty."}</h3>{books.length > 0 && <button type="button" onClick={reset}>Clear filters</button>}</div>}
+            <div className="booky-pagination"><p>Showing {filtered.length ? start + 1 : 0}–{Math.min(start + PAGE_SIZE, filtered.length)} of {filtered.length} books</p><nav aria-label="Book pages">{page > 1 && <button type="button" onClick={() => setCurrentPage(page - 1)}>← Previous</button>}{pages.map(n => <button type="button" key={n} aria-label={`Page ${n}`} aria-current={page === n ? "page" : undefined} onClick={() => setCurrentPage(n)}>{n}</button>)}<button type="button" disabled={page >= totalPages} onClick={() => setCurrentPage(page + 1)}>Next →</button></nav></div>
           </section>
-        </main>
+        </>}
       </div>
     </div>
-  );
-};
-
-export default BookCatalogPage;
+  </>;
+}

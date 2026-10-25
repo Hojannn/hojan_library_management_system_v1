@@ -1,38 +1,10 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { LoadingState } from "@/components/ui/loading-spinner";
+﻿import { LoadingState } from "@/components/ui/loading-spinner";
+import { Button } from "@/components/ui/button";
 import { useGetBookRecommendations } from "@/hooks/useBooks";
 import BookCard from "./BookCard";
-
-interface BookRecommendationsProps {
-  bookId: string;
+export default function BookRecommendations({ bookId }: { bookId: string }) {
+  const { data: books = [], isLoading, isError, refetch } = useGetBookRecommendations(bookId);
+  if (isLoading) return <LoadingState label="Loading recommendations" containerClassName="py-12" />;
+  if (isError) return <div className="details-empty" role="alert"><p>Couldn’t load recommendations.</p><Button onClick={() => void refetch()}>Try again</Button></div>;
+  return <section className="details-recommendations"><header className="details-panel-heading"><div><h2>Keep exploring</h2><p>More books to discover, inspired by this title.</p></div><span>{books.length} {books.length === 1 ? "suggestion" : "suggestions"}</span></header>{books.length ? <div className="details-recommendation-grid">{books.map(book => <BookCard key={book.id} book={book} variant="recommendation" />)}</div> : <p className="details-empty">No recommendations available for this title right now.</p>}</section>;
 }
-
-const BookRecommendations = ({ bookId }: BookRecommendationsProps) => {
-  
-  const { data: recommendations, isLoading } = useGetBookRecommendations(bookId);
-
-
-  if (isLoading) {
-    return <LoadingState className="text-muted-foreground" containerClassName="p-8" label="Loading recommendations" size={24} />;
-  }
-
-  if (!recommendations || recommendations.length === 0) {
-    return (
-      <Card className="border-border/50 shadow-none">
-        <CardContent className="p-6 text-center text-xs text-muted-foreground">
-          No recommendations available for this title right now.
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {recommendations.map((book) => (
-        <BookCard book={book} />
-      ))}
-    </div>
-  );
-};
-
-export default BookRecommendations;

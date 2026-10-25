@@ -1,179 +1,39 @@
-import { Button } from "@/components/ui/button";
-import { LoadingState } from "@/components/ui/loading-spinner";
-import { Textarea } from "@/components/ui/textarea";
-import { useGetBookReviews, useSubmitReview } from "@/hooks/useBooks"
+﻿import { useState, type SubmitEvent } from "react";
 import { AxiosError } from "axios";
 import { Star } from "lucide-react";
-import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { LoadingState } from "@/components/ui/loading-spinner";
+import { useGetBookReviews, useSubmitReview } from "@/hooks/useBooks";
+import { sortReviews } from "../../models/ReviewEntity";
 
-interface BookReviewsProps {
-  bookId: string
-}
-
-const BookReviews = ({ bookId }: BookReviewsProps) => {
-  const [rating, setRating] = useState<number>(5);
-  const [hoverRating, setHoverRating] = useState<number>(0);
-  const [comment, setComment] = useState<string>("");
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  const { data: reviews = [], isLoading, isError } = useGetBookReviews(bookId);
-
-  const { mutate: addReview, isPending: isSubmitting, error: submitError } = useSubmitReview(bookId);
-
-  const submitErrorMessage = submitError
-    ? (submitError as AxiosError<{ message: string }>).response?.data?.message ||
-      submitError.message ||
-      "Failed to post review."
-    : null;
-
-  const handleSubmit = (e: React.SubmitEvent) => {
-    e.preventDefault();
-
-    if (!comment.trim()) {
-      setValidationError("Please write a short comment before submitting.");
-      return;
-    }
-
-    setValidationError(null);
-
-    addReview(
-      { rating, comment },
-      {
-        onSuccess: () => {
-          setComment("");
-          setRating(5);
-        },
-      }
-    );
-  };
-
-  if (isLoading) {
-    return <LoadingState className="text-primary" containerClassName="py-10" label="Loading reviews" size={24} />;
+export default function BookReviews({ bookId }: { bookId: string }) {
+  const [rating, setRating] = useState(5);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState("");
+  const [validation, setValidation] = useState("");
+  const [order, setOrder] = useState<"newest" | "oldest">("newest");
+  const { data: reviews = [], isLoading, isError, refetch } = useGetBookReviews(bookId);
+  const { mutate, isPending, error } = useSubmitReview(bookId);
+  const average = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
+  const errorMessage = error instanceof AxiosError ? error.response?.data?.message || error.message : error?.message;
+  function submit(event: SubmitEvent) {
+    event.preventDefault();
+    if (!comment.trim()) { setValidation("Please write a short comment before submitting."); return; }
+    setValidation("");
+    mutate({ rating, comment: comment.trim() }, { onSuccess: () => { setComment(""); setRating(5); } });
   }
-
-  if (isError) {
-    return (
-      <div className="text-xs text-destructive py-4">
-        Failed to load reviews for this book.
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6 pt-2">
-      <div className="flex items-center justify-between border-b border-black/10 pb-3">
-        <h3 className="text-xs uppercase tracking-wider font-bold text-foreground">
-          Ratings & Feedback ({reviews.length})
-        </h3>
-      </div>
-
-      {/* review form */}
-      <form 
-        onSubmit={handleSubmit}
-        className="p-4 rounded-xl bg-black/[0.02] border border-black/5 space-y-4"
-      >
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-            Your Rating
-          </label>
-          <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  type="button"
-                  key={star}
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className="p-0.5 focus:outline-none transition-transform hover:scale-110"
-                >
-                  <Star
-                    className={`h-5 w-5 ${
-                      star <= (hoverRating || rating)
-                        ? "fill-amber-500 text-amber-500"
-                        : "text-muted-foreground/20"
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-        </div>
-
-        {/* comment */}
-        <div className="space-y-1">
-          <Textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Write your feedback about this book..."
-            rows={3}
-            className="w-full text-xs rounded-lg border-black/10 bg-background resize-none focus-visible:ring-primary"
-          />
-        </div>
-
-        {/* handle error */}
-        {(validationError || submitError) && (
-            <p className="text-xs text-destructive">
-              {validationError || submitErrorMessage}
-            </p>
-          )}
-        
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-5 py-2 text-xs font-bold rounded-xl"
-        >
-          {isSubmitting ? (
-            "Posting..."
-          ) : (
-            "Submit Review"
-          )}
-        </Button>
-      </form>
-
-      {/* Reviews List Feed */}
-      <div className="space-y-3">
-        {reviews.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic py-2">
-            No feedback yet for this book. Be the first to share your thoughts!
-          </p>
-        ) : (
-          reviews.map((rev) => (
-            <div
-              key={rev.id}
-              className="p-4 rounded-xl bg-black/[0.02] border border-black/5 space-y-2"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground">
-                  {rev.userName}
-                </span>
-                <span className="text-[10px] text-muted-foreground">
-                  {rev.formattedDate}
-                </span>
-              </div>
-
-              {/* Star Rating Display */}
-              <div className="flex items-center gap-0.5">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`h-3.5 w-3.5 ${
-                      star <= rev.rating
-                        ? "fill-amber-500 text-amber-500"
-                        : "text-muted-foreground/20"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Comment Content */}
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {rev.comment}
-              </p>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  )
+  if (isLoading) return <LoadingState label="Loading reviews" containerClassName="py-12" />;
+  if (isError) return <div className="details-empty" role="alert"><p>Couldn’t load reviews for this book.</p><Button onClick={() => void refetch()}>Try again</Button></div>;
+  return <section className="details-reviews">
+    <header className="details-panel-heading details-review-heading"><div><h2>Ratings &amp; feedback</h2><p>{reviews.length} {reviews.length === 1 ? "review" : "reviews"} from your library community</p></div><div className="details-review-average"><strong>{average.toFixed(1)}</strong><span role="img" aria-label={`${average.toFixed(1)} out of 5 stars`}>{[1,2,3,4,5].map(n => <Star key={n} size={16} aria-hidden="true" fill={n <= Math.round(average) ? "currentColor" : "none"} />)}</span></div></header>
+    <form className="details-review-form" onSubmit={submit}>
+      <h3>Share your thoughts</h3><fieldset className="details-rating-input"><legend>Your rating</legend><div>{[1,2,3,4,5].map(star => <label key={star} onMouseEnter={() => setHover(star)} onMouseLeave={() => setHover(0)}><input type="radio" name="review-rating" value={star} checked={rating === star} onChange={() => setRating(star)} aria-label={`${star} ${star === 1 ? "star" : "stars"}`} /><Star size={23} aria-hidden="true" fill={star <= (hover || rating) ? "currentColor" : "none"} /></label>)}</div></fieldset>
+      <label className="sr-only" htmlFor="review-comment">Your review</label><Textarea id="review-comment" value={comment} onChange={event => setComment(event.target.value)} placeholder="Write your feedback about this book..." rows={3} aria-invalid={!!validation || !!error} aria-describedby={validation || error ? "review-error" : undefined} />
+      {(validation || error) && <p id="review-error" className="details-review-error" role="alert">{validation || errorMessage || "Failed to post review."}</p>}
+      <div className="details-review-submit"><Button type="submit" disabled={isPending}>{isPending ? "Posting…" : "Submit review"}</Button><p>Your review helps other students choose their next read.</p></div>
+    </form>
+    <div className="details-community-heading"><h3>Community reviews</h3><label><span className="sr-only">Sort reviews</span><select value={order} onChange={event => setOrder(event.target.value as "newest" | "oldest")}><option value="newest">Most recent ↓</option><option value="oldest">Oldest first ↑</option></select></label></div>
+    <div className="details-review-list">{reviews.length === 0 ? <p className="details-empty">No feedback yet. Be the first to share your thoughts!</p> : sortReviews(reviews, order).map(review => <article key={review.id} className="details-review-card"><span className="details-review-avatar" aria-hidden="true">{review.userName.trim().split(/\s+/).map(part => part[0]).slice(0,2).join("").toUpperCase() || "R"}</span><div className="details-review-body"><header><div><h4>{review.userName}</h4><span className="details-review-stars" role="img" aria-label={`${review.rating} out of 5 stars`}>{[1,2,3,4,5].map(n => <Star key={n} size={13} aria-hidden="true" fill={n <= review.rating ? "currentColor" : "none"} />)}</span></div><time dateTime={review.createdAt.toISOString()}>{review.formattedDate}</time></header><p>{review.comment}</p></div></article>)}</div>
+  </section>;
 }
-
-export default BookReviews
