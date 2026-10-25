@@ -8,6 +8,47 @@ from app.services.book_service import BookService
 
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 
+
+@books_bp.get("/favorites")
+@jwt_required()
+def get_user_favorites():
+  user_id = get_jwt_identity()
+  books = BookService.get_user_favorites(user_id)
+  return jsonify([book.to_dict() for book in books]), 200
+
+
+@books_bp.post("/<uuid:id>/favorite")
+@jwt_required()
+def add_favorite(id):
+  user_id = get_jwt_identity()
+  try:
+    favorite = BookService.add_favorite(user_id=user_id, book_id=id)
+    return jsonify({
+      "message": "Book added to favorites",
+      "favorite": favorite.to_dict(),
+    }), 201
+  except LookupError as e:
+    return jsonify({"message": str(e)}), 404
+
+
+@books_bp.delete("/<uuid:id>/favorite")
+@jwt_required()
+def remove_favorite(id):
+  user_id = get_jwt_identity()
+  BookService.remove_favorite(user_id=user_id, book_id=id)
+  return jsonify({"message": "Book removed from favorites"}), 200
+
+
+@books_bp.get("/admin/catalog")
+@admin_required()
+def get_staff_catalog():
+  try:
+    state = request.args.get("state", "active")
+    books = BookService.get_staff_catalog(state)
+    return jsonify([book.to_dict() for book in books]), 200
+  except ValueError as e:
+    return jsonify({"message": str(e)}), 400
+
 # get related books by category or author books
 @books_bp.get("/<uuid:id>/related")
 @jwt_required()
@@ -81,19 +122,24 @@ def add_review(id):
 @books_bp.put("/restore/<uuid:id>")
 @admin_required()
 def restore_book(id):
-  book = BookService.restore_book(id)
-  if not book:
-      return jsonify({"message": "Book not found or not deleted"}), 404
-  return jsonify({"message": "Book successfully restored", "book": book.to_dict()}), 200
+  try:
+    book = BookService.restore_book(id)
+    return jsonify({"message": "Book successfully restored", "book": book.to_dict()}), 200
+  except LookupError as e:
+    return jsonify({"message": str(e)}), 404
 
   
 # For deleting a book
 @books_bp.delete("/<uuid:id>")
 @admin_required()
 def delete_book(id):
-  success, message = BookService.delete_book(id)
-  status_code = 200 if success else (400 if "borrowed" in message else 404)
-  return jsonify({"message": message}), status_code
+  try:
+    book = BookService.archive_book(id)
+    return jsonify({"message": "Book archived successfully", "book": book.to_dict()}), 200
+  except ValueError as e:
+    return jsonify({"message": str(e)}), 400
+  except LookupError as e:
+    return jsonify({"message": str(e)}), 404
 
 
 # For updating a book

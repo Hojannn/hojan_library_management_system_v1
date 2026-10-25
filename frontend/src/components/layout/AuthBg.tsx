@@ -2,11 +2,11 @@
 import { useEffect, useState } from "react";
 
 const images = [
-  "/images/img1.jpg",
-  "/images/img2.jpg",
-  "/images/img3.jpg",
-  "/images/img4.jpg",
-  "/images/img5.jpg"
+  "/images/img1.webp",
+  "/images/img2.webp",
+  "/images/img3.webp",
+  "/images/img4.webp",
+  "/images/img5.webp"
 ];
 
 export default function AuthBackground() {

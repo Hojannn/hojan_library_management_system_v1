@@ -20,4 +20,14 @@ def admin_required():
       return fn(*args, **kwargs)
     return wrapper
   return decorator
-  
+
+def administrator_required():
+  def decorator(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+      verify_jwt_in_request()
+      if get_jwt().get("role", "").lower() != "admin":
+        return jsonify({"message": "Access denied, only administrators are allowed"}), 403
+      return fn(*args, **kwargs)
+    return wrapper
+  return decorator

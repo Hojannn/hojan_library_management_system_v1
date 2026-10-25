@@ -1,209 +1,83 @@
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { BookOpen, Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-spinner";
-import { useGetBookById, useGetBookReviewStats } from "@/hooks/useBooks";
-import { useState } from "react";
-import { 
-  ArrowLeft, 
-  Bookmark, 
-  Heart, 
-  Star, 
-} from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BookDetailsTable from "@/features/books/components/books/BookDetailsTable";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import BookReviews from "@/features/books/components/books/BookReviews";
+import {
+  useFavoriteBooks,
+  useGetBookById,
+  useGetBookReviewStats,
+  useToggleFavoriteBook,
+} from "@/hooks/useBooks";
 import { useCreateBorrows } from "@/hooks/useBorrows";
+import { useAuth } from "@/hooks/useAuth";
+import BookDetailsTable from "@/features/books/components/books/BookDetailsTable";
+import BookReviews from "@/features/books/components/books/BookReviews";
 import BookRecommendations from "@/features/books/components/books/BookRecommendations";
 import AuthorOtherBooks from "@/features/books/components/books/AuthorOtherBooks";
-import { useAuth } from "@/hooks/useAuth";
+import "./book-details.css";
 
-const BookDetailsPage = () => {
+export default function BookDetailsPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  return <BookDetailsContent key={id} bookId={id} />;
+}
+
+function BookDetailsContent({ bookId }: { bookId?: string }) {
   const { user } = useAuth();
-  const [showFullDescription, setShowFullDescription] = useState(false);
-
-  const { data: book, isLoading, isError, error } = useGetBookById(id);
-  const { data: stats } = useGetBookReviewStats(id);
-
-  const borrowMutation = useCreateBorrows();
-
-  if (isLoading) {
-    return <LoadingState containerClassName="h-96" label="Loading book details" />;
-  }
-
-  if (isError || !book) {
-    return (
-      <div className="p-6 max-w-4xl mx-auto space-y-4">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-xs">
-          <ArrowLeft className="h-4 w-4" /> Back to Catalog
-        </Button>
-        <div className="p-4 border border-destructive/20 bg-destructive/10 text-destructive rounded-xl text-sm">
-          Failed to load book details: {error ? (error as Error).message : "Book not found"}
-        </div>
-      </div>
-    );
-  }
-
-  const totalReviews = stats?.total_reviews ?? book.total_reviews ?? 0;
-  const averageRating = stats?.average_rating ?? 0;
-  const isAvailable = (book.available_copies ?? 0) > 0;
-
-  const handleBorrow = () => {
-    if(!book.id) return;
-
-    borrowMutation.mutate({ book_id: book.id });
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto px-0 md:p-4 space-y-8 min-h-screen">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink>
-              <Link to={user?.role === "student" ? "/books" : "/dashboard"}>
-                Home
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink>
-              <Link to="/books">Catalog</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="max-w-[200px] sm:max-w-xs truncate font-medium text-foreground">
-              {book.title}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      
-      <div className="grid grid-cols-3 md:grid-cols-12 gap-4 items-start">
-        {/* Book image */}
-        <div className="md:col-span-3 col-span-1 my-auto">
-          <div className="w-24 h-36  md:w-56 md:h-80 rounded-xl overflow-hidden shadow-sm bg-muted/50 border border-black/5">
-            <img
-              src={book.image_url || "/placeholder-cover.jpg"}
-              alt={book.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        <div className="md:col-span-6 col-span-2 md:space-y-4 space-y-2 pt-2 md:mx-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
-              {book.title}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Author: <span className="font-semibold text-foreground">{book.author}</span>
-            </p>
-          </div>
-
-          {/* Rating Header */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center text-amber-500">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  className={`w-4 h-4 ${
-                    i < Math.round(averageRating) 
-                      ? "fill-amber-500 text-amber-500" 
-                      : "text-muted-foreground/20"
-                  }`} 
-                />
-              ))}
-            </div>
-            <span className="text-xs text-muted-foreground font-medium">
-              {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
-            </span>
-          </div>
-
-          <p
-            className={`text-xs md:text-sm text-muted-foreground leading-relaxed max-w-2xl ${
-              showFullDescription ? "" : "line-clamp-4"
-            }`}
+  const [expanded, setExpanded] = useState(false);
+  const { data: book, isLoading, isError, refetch } = useGetBookById(bookId);
+  const { data: stats } = useGetBookReviewStats(bookId);
+  const { data: favorites } = useFavoriteBooks();
+  const toggleFavorite = useToggleFavoriteBook();
+  const borrow = useCreateBorrows();
+  if (isLoading) return <LoadingState containerClassName="h-96" label="Loading book details" />;
+  if (isError || !book) return <div className="details-empty" role="alert"><h1>We couldn’t load this book.</h1><p>Please try again or return to the catalog.</p><Button onClick={() => void refetch()}>Try again</Button><Link to="/books">Back to catalog</Link></div>;
+  const count = stats?.total_reviews ?? book.total_reviews ?? 0;
+  const average = stats?.average_rating ?? book.average_rating ?? 0;
+  const available = book.available_copies > 0;
+  const isFavorite = Boolean(favorites?.some((fav) => fav.id === book.id));
+  return <article className="book-details">
+    <nav className="details-breadcrumb" aria-label="Breadcrumb"><Link to={user?.role === "student" ? "/books" : "/dashboard"}>Home</Link><span aria-hidden="true">›</span><Link to="/books">Catalog</Link><span aria-hidden="true">›</span><span aria-current="page">{book.title}</span></nav>
+    <div className="details-overview">
+      <div className="details-cover-display">{book.image_url ? <img src={book.image_url} alt={`${book.title} cover`} /> : <div className="details-no-cover"><BookOpen aria-hidden="true" /><span>{book.title}</span></div>}</div>
+      <div className="details-summary">
+        <p className="details-category">{book.category_name || "Uncategorized"}</p>
+        <h1>{book.title}</h1><p className="details-byline">By {book.author}</p>
+        <div className="details-rating"><span className="details-stars" role="img" aria-label={`${average.toFixed(1)} out of 5 stars`}>{[1, 2, 3, 4, 5].map(n => <Star key={n} size={17} aria-hidden="true" fill={n <= Math.round(average) ? "currentColor" : "none"} />)}</span><strong>{average.toFixed(1)}</strong><span>{count} {count === 1 ? "review" : "reviews"}</span></div>
+        <p className={`details-description ${expanded ? "is-expanded" : ""}`}>{book.description || "No overview available for this title."}</p>
+        {book.description && book.description.length > 160 && <button type="button" className="details-expand" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "View less" : "View more"}</button>}
+        <div className="details-actions">
+          <Button className="details-borrow" disabled={!available || borrow.isPending || borrow.isSuccess} onClick={() => borrow.mutate({ book_id: book.id })}>
+            <img src="/book-details/borrow.svg" alt="" />
+            {borrow.isPending ? "Submitting…" : borrow.isSuccess ? "Request submitted" : !available ? "Out of stock" : "Borrow book"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className={`details-favorite ${isFavorite ? "is-favorite" : ""}`}
+            aria-pressed={isFavorite}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            disabled={toggleFavorite.isPending}
+            onClick={() => toggleFavorite.mutate({ bookId: book.id, isFavorite })}
           >
-            {book.description || "No overview available for this title."}
-          </p>
-
-          {book.description && book.description.length > 160 && (
-            <button
-              type="button"
-              onClick={() => setShowFullDescription((prev) => !prev)}
-              className="text-xs text-primary font-semibold hover:underline block pt-1"
-            >
-              {showFullDescription ? "View Less" : "View More"}
-            </button>
-          )}
-
-          <div className="flex items-center gap-3 pt-4">
-            <Button 
-              onClick={handleBorrow}
-              disabled={!isAvailable || borrowMutation.isPending}
-              className="gap-2 px-7 py-5 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-none hover:opacity-90"
-            >
-              <Bookmark className="w-4 h-4" />
-              {!isAvailable ? "Out of Stock" : borrowMutation.isPending ? "Borrowing..." : "Borrow"}
-            </Button>
-            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-black/10 bg-transparent shadow-none hover:bg-black/5">
-              <Heart className="w-4 h-4 text-foreground" />
-            </Button>
-          </div>
+            <Heart
+              size={20}
+              fill={isFavorite ? "currentColor" : "none"}
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+          </Button>
         </div>
-
-        <div className="md:col-span-3 col-span-4">
-          <AuthorOtherBooks currentBookId={book.id} authorName={book.author} onSelectBook={(selectedId) => navigate(`/books/${selectedId}`)} />
-        </div>
+        <p className="details-borrow-note">14-day borrowing period</p>
       </div>
-
-      {/* Content Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-4">
-        <div className="lg:col-span-12">
-          <Tabs defaultValue="details" className="w-full space-y-6">
-            <TabsList variant="line" className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 gap-8">
-              <TabsTrigger
-                value="details"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs font-semibold px-0 pb-3"
-              >
-                Book Details
-              </TabsTrigger>
-
-              <TabsTrigger
-                value="reviews"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs font-semibold px-0 pb-3"
-              >
-                Reviews ({totalReviews})
-              </TabsTrigger>
-
-              <TabsTrigger
-                value="recommendations"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs font-semibold px-0 pb-3"
-              >
-                Recommendations
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="details">
-              <BookDetailsTable book={book} />
-            </TabsContent>
-
-            <TabsContent value="reviews">
-              <BookReviews bookId={book.id} />
-            </TabsContent>
-
-            <TabsContent value="recommendations">
-              <BookRecommendations bookId={book.id} />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+      <AuthorOtherBooks currentBookId={book.id} authorName={book.author} />
     </div>
-  );
-};
-
-export default BookDetailsPage;
+    <Tabs defaultValue="details" className="details-tabs">
+      <TabsList variant="line" className="details-tab-list" aria-label="Book information"><TabsTrigger value="details">Book Details</TabsTrigger><TabsTrigger value="reviews">Reviews ({count})</TabsTrigger><TabsTrigger value="recommendations">Recommendations</TabsTrigger></TabsList>
+      <TabsContent value="details"><section className="details-information"><header className="details-panel-heading"><h2>Everything about this book</h2><p>Publication details and library information.</p></header><BookDetailsTable book={book} /></section></TabsContent>
+      <TabsContent value="reviews"><BookReviews bookId={book.id} /></TabsContent>
+      <TabsContent value="recommendations"><BookRecommendations bookId={book.id} /></TabsContent>
+    </Tabs>
+  </article>;
+}

@@ -20,6 +20,8 @@ class BookDict(TypedDict):
   total_reviews: int
   pages: int | None
   created_at: str | None
+  is_deleted: bool
+  archived_at: str | None
 
 
 class StudentDict(TypedDict):
@@ -57,8 +59,16 @@ class ReviewDict(TypedDict):
   created_at: str | None
 
 
+class FavoriteDict(TypedDict):
+  id: str | None
+  user_id: str | None
+  book_id: str | None
+  created_at: str | None
+
+
 BorrowStatus = Literal[
   "PENDING_BORROW",
+  "READY_FOR_PICKUP",
   "BORROWED",
   "PENDING_RETURN",
   "RETURNED",
@@ -76,8 +86,11 @@ class BorrowDict(TypedDict):
   book_title: str
   book_image: str | None
   author: str | None
+  book_available_copies: int | None
   borrowed_at: str | None
   due_date: str | None
+  approved_at: str | None
+  rejection_reason: str | None
   status: BorrowStatus
   is_overdue: bool
   returned_at: str | None

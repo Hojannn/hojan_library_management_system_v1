@@ -34,3 +34,10 @@ export class ReviewEntity {
   }
 
 }
+
+export function sortReviews(reviews: ReviewEntity[], order: "newest" | "oldest"): ReviewEntity[] {
+  return [...reviews].sort((a, b) => {
+    const difference = a.createdAt.getTime() - b.createdAt.getTime();
+    return order === "oldest" ? difference : -difference;
+  });
+}

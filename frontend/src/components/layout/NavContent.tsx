@@ -1,4 +1,4 @@
-import { useAuth, useGetAllUsers } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "../ui/button";
 import {
   BookmarkCheck,
@@ -8,7 +8,10 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
+  Layers3,
   LogOut,
+  RotateCcw,
+  Settings,
   User
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -44,11 +47,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   // Per-item override: absent key = follow the active route
   const [submenuOpenOverride, setSubmenuOpenOverride] = useState<Record<string, boolean>>({});
 
-  // Role counts for the Users submenu (staff only; shares the ["users"] cache with the Users page)
-  const isStaff = user?.role === "admin" || user?.role === "librarian";
-  const { data: allUsers = [] } = useGetAllUsers({ enabled: isStaff });
-  const librarianCount = allUsers.filter((u) => u.role === "librarian").length;
-  const studentCount = allUsers.filter((u) => u.role === "student").length;
+  const isAdmin = user?.role === "admin";
 
   const handleLogout = async () => {
     await logout();
@@ -65,26 +64,29 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
     }
 
     if (user?.role === "admin" || user?.role === "librarian") {
-      return [
+      const staffItems: NavItem[] = [
         { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
         {
           label: "Borrow Requests",
-          path: "/all-borrows",
+          path: "/borrow-requests",
           icon: BookmarkIcon,
           children: [
-            { label: "Waiting/Pending", path: "/all-borrows/pending" },
-            { label: "Active", path: "/all-borrows/active" },
-            { label: "Overdue", path: "/all-borrows/overdue" },
-            { label: "Returned", path: "/all-borrows/returned" },
-            { label: "Rejected", path: "/all-borrows/rejected" },
+            { label: "Pending", path: "/borrow-requests/pending" },
+            { label: "For Pickup", path: "/borrow-requests/pickup" },
+            { label: "History", path: "/borrow-requests/history" },
           ],
         },
-        { label: "Users", path: "/users", icon: User, children: [
-          { label: "Librarians", path: "/users/librarian", count: librarianCount },
-          { label: "Students", path: "/users/student", count: studentCount },
-        ] },
+        { label: "Loans & Returns", path: "/all-borrows/active", icon: RotateCcw },
         { label: "Books List", path: "/book-list", icon: BookOpen },
+        { label: "Categories", path: "/categories", icon: Layers3 },
       ];
+
+      if (isAdmin) {
+        staffItems.push({ label: "Users", path: "/users", icon: User });
+      }
+
+      staffItems.push({ label: "Settings", path: "/profile", icon: Settings });
+      return staffItems;
     }
 
     return [];
@@ -101,17 +103,17 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
       {/* Brand / Logo Header */}
       <div
         className={cn(
-          "flex h-16 items-center justify-between border-b border-sidebar-border shrink-0",
+          "flex h-24 items-center justify-between shrink-0",
           collapsed ? "px-3" : "px-4"
         )}
       >
         <div className={cn("flex items-center gap-3 overflow-hidden", collapsed && "mx-auto")}>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold">
             <BookOpen className="h-5 w-5" />
           </div>
           {!collapsed && (
             <span className="font-semibold text-lg whitespace-nowrap tracking-tight text-sidebar-foreground">
-              Library System
+              Booky
             </span>
           )}
         </div>
@@ -120,7 +122,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
             variant="ghost"
             size="icon"
             onClick={onToggle}
-            className="shrink-0 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            className="shrink-0 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
             aria-label="Collapse sidebar"
           >
             <ChevronLeft className="size-5" />
@@ -134,7 +136,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           <Button
             variant="ghost"
             onClick={onToggle}
-            className="w-full h-8 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            className="w-full h-8 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
             aria-label="Expand sidebar"
           >
             <ChevronRight className="size-5" />
@@ -143,7 +145,13 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
       )}
 
       {/* Links */}
-      <nav className="flex-1 space-y-2 p-2">
+      {!collapsed && user?.role !== "student" && (
+        <p className="px-6 pb-3 text-[10px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+          Library workspace
+        </p>
+      )}
+
+      <nav className="flex-1 space-y-1.5 px-3">
         {navItems.map((item) => {
           const Icon = item.icon;
           const hasChildren = !!item.children && !collapsed;
@@ -158,10 +166,10 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                     onClick={onItemClick}
                     className={({ isActive }) =>
                       cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset pr-9",
+                        "flex items-center gap-3 rounded-full px-3 py-3 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset pr-9",
                         isActive
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )
                     }
                   >
@@ -175,7 +183,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                     }
                     aria-label={submenuOpen ? `Collapse ${item.label} menu` : `Expand ${item.label} menu`}
                     aria-expanded={submenuOpen}
-                    className="absolute inset-y-0 right-1 my-auto flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                    className={cn("absolute inset-y-0 right-1 my-auto flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring", location.pathname.startsWith(item.path) ? "text-sidebar-primary-foreground" : "text-sidebar-foreground")}
                   >
                     <ChevronDown
                       className={cn("h-4 w-4 transition-transform duration-200", submenuOpen && "rotate-180")}
@@ -192,10 +200,10 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                           onClick={onItemClick}
                           className={({ isActive }) =>
                             cn(
-                              "flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
+                              "flex items-center justify-between gap-2 rounded-full px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
                               isActive
-                                ? "bg-primary text-primary-foreground font-semibold"
-                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                             )
                           }
                         >
@@ -204,7 +212,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                             <span
                               className={cn(
                                 "rounded-full px-2 py-0.5 text-xs font-medium",
-                                "bg-sidebar-accent text-sidebar-foreground/70"
+                                "bg-sidebar-accent text-sidebar-foreground"
                               )}
                             >
                               {child.count}
@@ -226,10 +234,10 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
               onClick={onItemClick}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
+                  "flex items-center gap-3 rounded-full px-3 py-3 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
                   isActive
-                    ? "bg-primary text-primary-foreground font-semibold"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   collapsed && "justify-center px-0"
                 )
               }
@@ -243,7 +251,12 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
       </nav>
 
       {/* Footer User Info and Logout */}
-      <div className="border-t border-sidebar-border p-3 space-y-2 mt-auto">
+      <div className="p-3 space-y-2 mt-auto">
+        {!collapsed && user?.role !== "student" && (
+          <p className="px-3 text-[9px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            {user?.role === "admin" ? "Administrator" : "Librarian"}
+          </p>
+        )}
         {!collapsed && user && (
           <NavLink
             to="/profile"
@@ -257,7 +270,9 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-sidebar-foreground truncate">{user.username}</p>
-              <p className="text-xs text-sidebar-foreground/60 truncate">{user.email}</p>
+              <p className="text-xs capitalize text-muted-foreground truncate">
+                {user.role === "admin" ? "Administrator" : user.role === "librarian" ? "Library staff" : user.email}
+              </p>
             </div>
           </NavLink>
         )}
@@ -266,7 +281,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           variant="ghost"
           onClick={handleLogout}
           className={cn(
-            "w-full h-10 justify-start gap-3 rounded-md px-3 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+            "w-full h-10 justify-start gap-3 rounded-md px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
             collapsed && "justify-center px-0"
           )}
           title={collapsed ? "Logout" : undefined}

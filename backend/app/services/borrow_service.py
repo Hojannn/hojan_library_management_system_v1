@@ -22,7 +22,8 @@ class BorrowService:
     @staticmethod
     def get_all_borrows_admin():
         return Borrow.query.options(
-            joinedload(Borrow.book)
+            joinedload(Borrow.book),
+            joinedload(Borrow.user),
         ).order_by(Borrow.created_at.desc()).all()
 
     @staticmethod
@@ -41,7 +42,12 @@ class BorrowService:
         return (
             Borrow.query.options(joinedload(Borrow.book))
             .filter_by(user_id=user_id)
-            .filter(Borrow.status.in_([Borrow.STATUS_PENDING_BORROW, Borrow.STATUS_BORROWED, Borrow.STATUS_PENDING_RETURN]))
+            .filter(Borrow.status.in_([
+                Borrow.STATUS_PENDING_BORROW,
+                Borrow.STATUS_READY_FOR_PICKUP,
+                Borrow.STATUS_BORROWED,
+                Borrow.STATUS_PENDING_RETURN,
+            ]))
             .all()
         )
 
@@ -59,7 +65,12 @@ class BorrowService:
 
         # Prevent duplicate active requests or holds on the same book
         existing_active = Borrow.query.filter_by(user_id=user_id, book_id=book_id)\
-            .filter(Borrow.status.in_([Borrow.STATUS_PENDING_BORROW, Borrow.STATUS_BORROWED, Borrow.STATUS_PENDING_RETURN]))\
+            .filter(Borrow.status.in_([
+                Borrow.STATUS_PENDING_BORROW,
+                Borrow.STATUS_READY_FOR_PICKUP,
+                Borrow.STATUS_BORROWED,
+                Borrow.STATUS_PENDING_RETURN,
+            ]))\
             .first()
 
         if existing_active:
@@ -84,7 +95,7 @@ class BorrowService:
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
         user_id = BorrowService._parse_uuid(user_id, "User ID")
 
-        borrow = db.session.get(Borrow, borrow_id)
+        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
         if not borrow:
             raise ValueError("Borrow record not found")
 
@@ -105,9 +116,9 @@ class BorrowService:
 
     @staticmethod
     def approve_borrow_request(borrow_id):
-        """Librarian approves the borrow request when physical pickup occurs."""
+        """Reserve an available copy for an approved request."""
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
-        borrow = db.session.get(Borrow, borrow_id)
+        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
 
         if not borrow:
             raise ValueError("Borrow record not found")
@@ -121,21 +132,50 @@ class BorrowService:
 
         try:
             book.decrement_available()
-            borrow.status = Borrow.STATUS_BORROWED
-            borrow.borrowed_at = datetime.now(timezone.utc)
-            borrow.due_date = datetime.now(timezone.utc) + timedelta(days=BorrowService.BORROW_DURATION)
+            borrow.status = Borrow.STATUS_READY_FOR_PICKUP
+            borrow.approved_at = datetime.now(timezone.utc)
+            borrow.borrowed_at = None
+            borrow.due_date = None
 
             db.session.commit()
+            db.session.refresh(borrow)
             return borrow
         except Exception:
             db.session.rollback()
             raise
 
     @staticmethod
-    def reject_borrow_request(borrow_id):
-        """Librarian rejects a pending borrow request."""
+    def confirm_borrow_pickup(borrow_id):
+        """Start the loan clock after staff hands the reserved book to the student."""
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
-        borrow = db.session.get(Borrow, borrow_id)
+        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
+
+        if not borrow:
+            raise ValueError("Borrow record not found")
+
+        if borrow.status != Borrow.STATUS_READY_FOR_PICKUP:
+            raise ValueError("Only requests ready for pickup can be confirmed")
+
+        try:
+            now = datetime.now(timezone.utc)
+            borrow.status = Borrow.STATUS_BORROWED
+            borrow.borrowed_at = now
+            borrow.due_date = now + timedelta(days=BorrowService.BORROW_DURATION)
+            db.session.commit()
+            db.session.refresh(borrow)
+            return borrow
+        except Exception:
+            db.session.rollback()
+            raise
+
+    @staticmethod
+    def reject_borrow_request(borrow_id, reason):
+        """Librarian rejects a pending borrow request."""
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError("Rejection reason is required")
+
+        borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
+        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
 
         if not borrow:
             raise ValueError("Borrow record not found")
@@ -145,7 +185,9 @@ class BorrowService:
 
         try:
             borrow.status = Borrow.STATUS_REJECTED
+            borrow.rejection_reason = reason.strip()
             db.session.commit()
+            db.session.refresh(borrow)
             return borrow
         except Exception:
             db.session.rollback()
@@ -155,7 +197,7 @@ class BorrowService:
     def approve_return_request(borrow_id):
         """Librarian confirms physical receipt of returned book."""
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
-        borrow = db.session.get(Borrow, borrow_id)
+        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
 
         if not borrow:
             raise ValueError("Borrow record not found")

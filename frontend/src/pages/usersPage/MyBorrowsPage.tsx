@@ -1,109 +1,72 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingState } from "@/components/ui/loading-spinner";
-import BorrowsTable from "@/features/borrows/components/BorrowsTable";
-import { useBorrowHistory, useBorrows, useReturnBook } from "@/hooks/useBorrows"
-import { BookOpen, History } from "lucide-react";
+import { useBorrowHistory, useBorrows } from "@/hooks/useBorrows";
+import { borrowState, filterBorrows, formatBorrowDate, summarizeBorrows } from "@/features/borrows/borrow-view";
+import BorrowSelect from "@/features/borrows/components/BorrowSelect";
+import "./my-borrows.css";
 
+const statusOptions = [
+  { value: "all", label: "All statuses" }, { value: "borrowed", label: "Borrowed" },
+  { value: "soon", label: "Due soon" }, { value: "overdue", label: "Overdue" },
+  { value: "pending", label: "Awaiting approval" }, { value: "ready", label: "Ready for pickup" },
+  { value: "pending-return", label: "Awaiting return confirmation" },
+];
+const activeSort = [{ value: "due", label: "Due date: nearest first" }, { value: "borrowed", label: "Recently borrowed" }, { value: "title", label: "Book title: A–Z" }];
+const historySort = [{ value: "returned", label: "Recently returned" }, { value: "borrowed", label: "Recently borrowed" }, { value: "title", label: "Book title: A–Z" }];
+const periodOptions = [{ value: "all", label: "All time" }, { value: "month", label: "This month" }, { value: "quarter", label: "Last 3 months" }, { value: "year", label: "This year" }];
 
-const MyBorrowsPage = () => {
-  const { 
-    data: activeBorrows = [], 
-    isLoading: isLoadingActive, 
-    isError: isErrorActive, 
-    error: errorActive 
-  } = useBorrows();
-
-  const { 
-    data: historyBorrows = [], 
-    isLoading: isLoadingHistory, 
-    isError: isErrorHistory, 
-    error: errorHistory 
-  } = useBorrowHistory();
-
-  const returnMutation = useReturnBook();
-
-
-  return (
-    <div className="space-y-6">
-      <div className="border-b pb-4">
-        <h1 className="text-2xl font-bold tracking-tight">My Book Loans</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your active book loans, track due dates, and view past return history.
-        </p>
-      </div>
-
-      {/* for tabs */}
-      <Tabs defaultValue="active" className="w-full space-y-6">
-        <TabsList variant="line" className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="active" className="gap-2">
-            <BookOpen className="h-4 w-4" />
-            Active Loans
-            {activeBorrows.length > 0 && (
-              <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                {activeBorrows.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="history" className="gap-2">
-            <History className="h-4 w-4" />
-            Borrow History
-            {historyBorrows.length > 0 && (
-              <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                {historyBorrows.length}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        {/* for tab 1 */}
-        <TabsContent value="active">
-          {isLoadingActive ? (
-            <LoadingState className="text-primary" containerClassName="h-64" label="Loading active loans" />
-          ) : isErrorActive ? (
-            <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-              Error loading active loans: {errorActive?.message || "Could not load records"}
-            </div>
-          ) : activeBorrows.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-              <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/50" />
-              <h3 className="text-lg font-semibold">No active loans</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                You don't have any books checked out right now.
-              </p>
-            </div>
-          ) : (
-            <BorrowsTable
-              borrows={activeBorrows}
-              onReturn={(borrowId) => returnMutation.mutate(borrowId)}
-              isReturning={returnMutation.isPending}
-              returningId={returnMutation.variables}
-            />
-          )}
-        </TabsContent>
-
-        {/* for tab 2 */}
-        <TabsContent value="history">
-          {isLoadingHistory ? (
-            <LoadingState className="text-primary" containerClassName="h-64" label="Loading borrow history" />
-          ) : isErrorHistory ? (
-            <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-              Error loading borrow history: {errorHistory?.message || "Could not load records"}
-            </div>
-          ) : historyBorrows.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-              <History className="mb-3 h-12 w-12 text-muted-foreground/50" />
-              <h3 className="text-lg font-semibold">No borrow history</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Books you borrow and return will show up here.
-              </p>
-            </div>
-          ) : (
-            <BorrowsTable borrows={historyBorrows} isHistoryView={true} />
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-};
-
-export default MyBorrowsPage
+export default function MyBorrowsPage() {
+  const active = useBorrows();
+  const history = useBorrowHistory();
+  const [tab, setTab] = useState("active");
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("all");
+  const [period, setPeriod] = useState("all");
+  const [sort, setSort] = useState("due");
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 60000); return () => window.clearInterval(timer); }, []);
+  const isHistory = tab === "history";
+  const current = isHistory ? history : active;
+  const records = current.data ?? [];
+  const summary = summarizeBorrows(active.data ?? [], history.data ?? [], now);
+  const visible = filterBorrows(records, { query, status, period, sort, history: isHistory }, now);
+  const pending = (active.data ?? []).some(b => b.status === "PENDING_BORROW" || b.status === "READY_FOR_PICKUP" || b.status === "PENDING_RETURN");
+  const rejected = (history.data ?? []).some(b => b.status === "REJECTED");
+  const cards = [
+    { label: "Currently borrowed", value: summary.borrowed, note: "Books still with you", kind: "", source: active },
+    { label: "Due soon", value: summary.soon, note: "Return within 3 days", kind: "soon", source: active },
+    { label: "Overdue", value: summary.overdue, note: "Please return to the library", kind: "overdue", source: active },
+    { label: "Returned", value: summary.returned, note: "Your reading so far", kind: "", source: history },
+  ];
+  return <div className="my-borrows">
+    <header className="borrows-heading"><p>YOUR LIBRARY ACTIVITY</p><h1>My Borrows</h1><span>Your reading journey, all in one place.</span></header>
+    <div className="borrows-summary">{cards.map(card => <section key={card.label} className={`borrows-stat ${card.kind}`} aria-label={card.label}>
+      <h2>{card.label}</h2><strong>{card.source.isLoading || card.source.isError ? "—" : String(card.value).padStart(2, "0")}</strong><p>{card.note}</p>
+    </section>)}</div>
+    <Tabs value={tab} onValueChange={value => { setTab(value); setQuery(""); setSort(value === "history" ? "returned" : "due"); }} className="borrows-tabs">
+      <TabsList variant="line" className="borrows-tab-list">
+        <TabsTrigger value="active">Active Borrows{active.data && ` (${active.data.length})`}</TabsTrigger>
+        <TabsTrigger value="history">Borrowing History{history.data && ` (${history.data.length})`}</TabsTrigger>
+      </TabsList>
+      {["active", "history"].map(value => <TabsContent key={value} value={value} className="borrows-tab-content">
+        <div className="borrows-controls">
+          <label className="borrows-search"><Search size={15} aria-hidden="true" /><input type="search" aria-label={isHistory ? "Search your borrowing history" : "Search your borrowed books"} placeholder={isHistory ? "Search your borrowing history" : "Search your borrowed books"} value={query} onChange={event => setQuery(event.target.value)} /></label>
+          <BorrowSelect label={isHistory ? "History period" : "Borrow status"} value={isHistory ? period : status} options={isHistory ? periodOptions : statusOptions.filter(option => pending || option.value === status || !["pending", "ready", "pending-return"].includes(option.value))} onChange={isHistory ? setPeriod : setStatus} />
+          <BorrowSelect label="Sort borrows" value={sort} options={isHistory ? historySort : activeSort} onChange={setSort} />
+        </div>
+        <div className="borrows-result-info"><p aria-live="polite">{current.isLoading ? "Loading your books…" : current.isError ? "Records unavailable" : isHistory ? `Showing ${visible.length} of ${records.length} ${rejected ? "history records" : "returned books"}` : `${visible.length} active ${visible.length === 1 ? "book" : "books"}`}</p><p>{sort === "due" ? "Overdue books appear first" : sort === "title" ? "Sorted by book title" : sort === "returned" ? "Most recent returns first" : "Most recently borrowed first"}</p></div>
+        {current.isLoading ? <LoadingState containerClassName="borrows-empty" label="Loading your borrows" /> : current.isError ? <div className="borrows-empty" role="alert"><h2>We couldn’t load your borrows.</h2><p>Please try again in a moment.</p><button type="button" onClick={() => void current.refetch()}>Try again</button></div> : visible.length ? <div className="borrows-table-scroll"><table className="borrows-table">
+          <thead><tr><th>BOOK</th><th>BORROWED</th><th>{isHistory ? "RETURNED" : "DUE DATE"}</th><th>STATUS</th></tr></thead>
+          <tbody>{visible.map(borrow => { const state = borrowState(borrow, now); return <tr key={borrow.id}>
+            <td><Link to={`/books/${borrow.book_id}`} className="borrows-book">{borrow.book_image ? <img src={borrow.book_image} alt={`${borrow.book_title} cover`} /> : <span className="borrows-cover" aria-hidden="true">{borrow.book_title.split(/\s+/).slice(0, 3).join("\n")}</span>}<span><strong>{borrow.book_title || "Unknown book"}</strong><span>{borrow.author || "Unknown author"}</span></span></Link></td>
+            <td data-label="Borrowed">{formatBorrowDate(borrow.borrowed_at)}</td><td data-label={isHistory ? "Returned" : "Due date"}>{formatBorrowDate(isHistory ? borrow.returned_at : borrow.due_date)}</td><td data-label="Status"><span className={`borrows-badge ${state.kind}`}>{state.label}</span></td>
+          </tr>; })}</tbody>
+        </table></div> : <div className="borrows-empty"><h2>{records.length ? "No books match your search." : isHistory ? "Your reading history starts here." : "No active borrows yet."}</h2><p>{records.length ? "Try a different title, author, or filter." : "Explore the catalog to find your next read."}</p>{records.length ? <button type="button" onClick={() => { setQuery(""); setStatus("all"); setPeriod("all"); }}>Clear filters</button> : <Link to="/books">Browse books →</Link>}</div>}
+        <aside className="borrows-guidance"><h2>{isHistory ? "Your reading history" : "Ready to return a book?"}</h2><p>{isHistory ? "Books appear here once a librarian confirms their return. Find your next read in the catalog." : "Bring it to the library desk. Your librarian will confirm the return and update your borrowing history."}</p></aside>
+      </TabsContent>)}
+    </Tabs>
+  </div>;
+}

@@ -28,8 +28,8 @@ interface BookFormModalProps {
 const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden">
-        <BookFormContent book={book} onClose={onClose} />
+      <DialogContent className="!top-0 !right-0 !left-auto h-dvh !max-w-[620px] !translate-x-0 !translate-y-0 content-start overflow-y-auto rounded-none p-0 sm:w-[620px]">
+        <BookFormContent key={book?.id || "new"} book={book} onClose={onClose} />
       </DialogContent>
     </Dialog>
   );
@@ -109,7 +109,7 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
         {/* Header */}
         <div className="bg-muted/40 px-6 pt-6 pb-4 border-b">
           <DialogTitle className="text-xl font-semibold tracking-tight">
-            {isEditing ? "Edit Book" : "Add New Book"}
+            {isEditing ? "Edit book" : "Add a new book"}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground mt-1">
             {isEditing
@@ -119,7 +119,7 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {/* Left Column: Image Upload Area */}
             <div className="space-y-2">
               <Label className="text-xs font-medium">
@@ -170,7 +170,7 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
             </div>
 
             {/* Right Column: Key Details */}
-            <div className="md:col-span-2 space-y-4">
+            <div className="sm:col-span-2 space-y-4">
               {/* Title */}
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-xs font-medium">
@@ -183,7 +183,7 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
               </div>
 
               {/* Author & Category */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="author" className="text-xs font-medium">
                     Author <span className="text-destructive">*</span>
@@ -216,7 +216,7 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
               </div>
 
               {/* ISBN, Copies, Pages */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="isbn" className="text-xs font-medium">
                     ISBN
@@ -284,9 +284,9 @@ const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
             </Button>
             <Button type="submit" disabled={isSaving}>
               {isEditing ? (
-                updateBookMutation.isPending ? "Updating..." : "Update Book"
+                updateBookMutation.isPending ? "Updating…" : "Update book"
               ) : (
-                createBookMutation.isPending ? "Adding..." : "Add Book"
+                createBookMutation.isPending ? "Adding…" : "Add book"
               )}
             </Button>
           </DialogFooter>

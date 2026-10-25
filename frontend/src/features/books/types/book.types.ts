@@ -18,20 +18,24 @@ export interface ReviewResponse extends Review {
 
 export interface Book {
   id: string;
-  isbn?: string;
+  isbn?: string | null;
   title: string;
   author: string;
-  category_name?: string;
-  category_id: string;
+  category_name?: string | null;
+  category_id: string | null;
   total_copies: number;
   available_copies: number;
-  image_url: string;
-  description?: string;
-  pages: number;
+  image_url: string | null;
+  description?: string | null;
+  pages: number | null;
   average_rating?: number;
   total_reviews?: number;
-  created_at?: string;
+  created_at?: string | null;
+  is_deleted?: boolean;
+  archived_at?: string | null;
 }
+
+export type StaffBookState = "active" | "archived";
 
 export interface BookResponse {
   message: string;

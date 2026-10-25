@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -47,11 +47,10 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
   };
 
   const inputClasses =
-    "w-full h-10 px-3 py-2 text-base md:text-base bg-card border border-input rounded-lg text-foreground";
+    "w-full h-[48px] px-[16px] py-2 text-sm bg-[var(--control)] border border-[var(--glass-border)] dark:border-border rounded-[12px] text-foreground placeholder:text-muted-foreground shadow-[var(--elevation-sm)] focus-visible:border-primary focus-visible:ring-ring/40";
 
   return (
     <div className="w-full space-y-3">
-
       {serverError && (
         <div
           role="alert"
@@ -62,17 +61,17 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-xs font-medium leading-normal text-foreground">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-[18px]">
+        <div className="space-y-[9px]">
+          <Label htmlFor="email" className="text-xs font-bold leading-normal text-foreground">
             Email address
           </Label>
           <div className="space-y-1">
             <Input
               id="email"
               type="email"
-              placeholder="student@gmail.com"
+              autoComplete="email"
+              placeholder="you@example.com"
               className={inputClasses}
               {...register("email")}
             />
@@ -84,13 +83,14 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="username" className="text-xs font-medium leading-normal text-foreground">
+        <div className="space-y-[9px]">
+          <Label htmlFor="username" className="text-xs font-bold leading-normal text-foreground">
             Username
           </Label>
           <div className="space-y-1">
             <Input
               id="username"
+              autoComplete="username"
               type="text"
               placeholder="Choose a username"
               className={inputClasses}
@@ -104,8 +104,8 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-xs font-medium leading-normal text-foreground">
+        <div className="space-y-[9px]">
+          <Label htmlFor="password" className="text-xs font-bold leading-normal text-foreground">
             Password
           </Label>
           <div className="space-y-1">
@@ -113,6 +113,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
                 placeholder="••••••••••••"
                 className={`${inputClasses} pr-10`}
                 {...register("password")}
@@ -120,13 +121,13 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
+                  <EyeOff className="size-[18px]" />
                 ) : (
-                  <Eye className="w-4 h-4" />
+                  <Eye className="size-[18px]" />
                 )}
               </button>
             </div>
@@ -138,8 +139,8 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-xs font-medium leading-normal text-foreground">
+        <div className="space-y-[9px]">
+          <Label htmlFor="confirmPassword" className="text-xs font-bold leading-normal text-foreground">
             Confirm password
           </Label>
           <div className="space-y-1">
@@ -147,6 +148,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
               <Input
                 id="confirmPassword"
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
                 placeholder="••••••••••••"
                 className={`${inputClasses} pr-10`}
                 {...register("confirmPassword")}
@@ -154,13 +156,13 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
+                  <EyeOff className="size-[18px]" />
                 ) : (
-                  <Eye className="w-4 h-4" />
+                  <Eye className="size-[18px]" />
                 )}
               </button>
             </div>
@@ -175,15 +177,9 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-10 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 shadow-sm"
+          className="w-full h-[52px] bg-primary hover:bg-primary-hover text-primary-foreground rounded-[20px] text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 shadow-[var(--elevation-sm)] mt-1"
         >
-          {isSubmitting ? (
-            "Creating Account..."
-          ) : (
-            <>
-              Create Account <ArrowRight className="w-4 h-4" />
-            </>
-          )}
+          {isSubmitting ? "Creating Account..." : "Create account"}
         </Button>
       </form>
     </div>
