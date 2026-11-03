@@ -11,9 +11,9 @@ const LoginPage = () => (
       >
         <div className="flex items-center gap-3">
           <span className="flex size-10 items-center justify-center rounded-[11px] bg-[#f3cd63] text-primary-foreground shadow-2xs dark:bg-primary">
-            <img src="/images/login/booky-book.svg" alt="" width="22" height="22" />
+            <img src="/pahina-logo.svg" alt="" width="40" height="40" />
           </span>
-          <span className="text-[25px] font-bold leading-[1.4] tracking-tight text-foreground">Booky</span>
+          <span className="text-[25px] font-bold leading-[1.4] tracking-tight text-foreground">Pahina</span>
         </div>
         <h1
           id="login-welcome"
@@ -58,7 +58,7 @@ const LoginPage = () => (
           </div>
           <GLogin layout="login" />
           <p className="mt-8 text-center text-[13px] text-muted-foreground">
-            New to Booky?{" "}
+            New to Pahina?{" "}
             <Link
               to="/register"
               className="ml-1 font-bold text-foreground transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
@@ -68,7 +68,7 @@ const LoginPage = () => (
           </p>
         </div>
         <p className="mt-12 text-center text-[11px] text-muted-foreground lg:mt-[57px]">
-          Booky · Library Management System
+          Pahina · Library Management System
         </p>
       </section>
     </div>

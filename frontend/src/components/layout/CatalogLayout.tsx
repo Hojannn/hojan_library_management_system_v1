@@ -41,11 +41,11 @@ export default function CatalogLayout() {
       className={`booky ${isDetails ? "booky-detail-shell" : ""} ${isBorrows ? "booky-borrows-shell" : ""} ${isFavorites ? "booky-favorites-shell" : ""} ${isAbout ? "booky-about-shell" : ""} ${isProfile ? "booky-profile-shell" : ""}`}
     >
       <header className="booky-header">
-        <Link to="/books" className="booky-brand" aria-label="Booky home">
+        <Link to="/books" className="booky-brand" aria-label="Pahina home">
           <span className="booky-mark">
-            <img src="/catalog/brand.svg" alt="" />
+            <img src="/pahina-logo.svg" alt="" width="40" height="40" />
           </span>
-          <span>Booky</span>
+          <span>Pahina</span>
         </Link>
         <nav className="booky-nav" aria-label="Main navigation">
           <Link to="/books" aria-current={isBooks ? "page" : undefined}>
@@ -104,7 +104,7 @@ export default function CatalogLayout() {
       </main>
       {!isDetails && !isBorrows && !isFavorites && !isAbout && !isProfile && (
         <footer className="booky-footer">
-          <span>Booky&nbsp; / &nbsp;Your campus library, a little closer.</span>
+          <span>Pahina&nbsp; / &nbsp;Your campus library, a little closer.</span>
           <span>Discover. Borrow. Grow.</span>
         </footer>
       )}
